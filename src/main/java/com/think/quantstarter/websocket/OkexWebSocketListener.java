@@ -54,7 +54,7 @@ public class OkexWebSocketListener extends WebSocketListener {
 
     @Override
     public void onFailure(final WebSocket webSocket, final Throwable t, final Response response) {
-        log.info("Connection failed,Please reconnect!");
+        log.info("Connection failed,Please reconnect! error message: {}", t.getMessage());
         if (Objects.nonNull(service)) {
             service.shutdown();
         }

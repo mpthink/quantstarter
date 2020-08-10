@@ -4,8 +4,6 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 /**
  * @author mpthink
  * @date 2020/8/7 16:51
@@ -14,9 +12,9 @@ import java.util.List;
 @Data
 @ConfigurationProperties(prefix = "okexconfig")
 public class OkexConfig {
-    private String serviceUrl;
+    private String wssUrl;
+    private String restUrl;
     private String apiKey;
     private String secretKey;
     private String passphrase;
-    private List<String> swapKline;
 }

@@ -41,7 +41,7 @@ public class WebSocketClient {
         if (null != webSocket) {
             webSocket.close(1000, "User actively closes the connection");
         } else {
-            System.out.println("Please establish the connection before you operate it！");
+            log.info("Please establish the connection before you operate it！");
         }
     }
 
@@ -76,10 +76,10 @@ public class WebSocketClient {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            System.out.println(DateFormatUtils.format(new Date(), DateUtils.TIME_STYLE_S4)+"Send a message to the server:" + str);
+            log.info(DateFormatUtils.format(new Date(), DateUtils.TIME_STYLE_S4)+"Send a message to the server:" + str);
             webSocket.send(str);
         } else {
-            System.out.println("Please establish the connection before you operate it！");
+            log.info("Please establish the connection before you operate it！");
         }
     }
 
