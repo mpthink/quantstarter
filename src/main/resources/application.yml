@@ -2,5 +2,12 @@ spring:
   application:
     name: quantstarter
 
-
+okexconfig:
+  serviceUrl: wss://real.okex.com:8443/ws/v3
+  apiKey: test
+  secretKey: test
+  passphrase: test
+  swapKline:
+    - "swap/candle180s"
+    - "swap/candle300s"
 
