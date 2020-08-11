@@ -94,12 +94,16 @@ public class APIConstants {
     public static final String GRANULARITY3MIN = "180";
     public static final String GRANULARITY5MIN = "300";
     public static final String GRANULARITY15MIN = "900";
-    public static final String GRANULARITY30MIN = "900";
+    public static final String GRANULARITY30MIN = "1800";
     public static final String GRANULARITY1HOUR = "3600";
     public static final String GRANULARITY2HOUR = "7200";
     public static final String GRANULARITY4HOUR = "14400";
     public static final String GRANULARITY1DAY = "86400";
     public static final String GRANULARITY1WEEK = "604800";
     public static final String GRANULARITY1MONTH = "2678400";
+
+
+    public static final int FAILED_TIMES_GETKLINES = 5;
+    public static final int KLINES_NUMBERS = 25;
 
 }

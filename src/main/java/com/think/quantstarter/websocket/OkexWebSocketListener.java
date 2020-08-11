@@ -1,5 +1,11 @@
 package com.think.quantstarter.websocket;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.think.quantstarter.bean.CollectDataBean;
+import com.think.quantstarter.rest.constant.APIConstants;
+import com.think.quantstarter.service.CacheKlineData;
 import com.think.quantstarter.utils.DateUtils;
 import com.think.quantstarter.utils.OkexUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -62,11 +68,60 @@ public class OkexWebSocketListener extends WebSocketListener {
 
     @Override
     public void onMessage(final WebSocket webSocket, final ByteString bytes) {
-        //测试服务器返回的字节
-        final String byteString=bytes.toString();
         final String s = OkexUtils.uncompress(bytes.toByteArray());
+        JSONObject jsonObject = JSON.parseObject(s);
+        String dataType = jsonObject.getString("table");
+        switch (dataType){
+            case "swap/ticker":
+                insertDataToQueue(jsonObject.getJSONArray("data").getString(0));
+                break;
+            case "swap/candle180s":
+                updateLastCacheData(CacheKlineData.CANDLE3MIN, jsonObject.getJSONArray("data").getJSONObject(0).get("candle"));
+                break;
+            case "swap/candle300s":
+                updateLastCacheData(CacheKlineData.CANDLE5MIN, jsonObject.getJSONArray("data").getJSONObject(0).get("candle"));
+                break;
+            case "swap/candle900s":
+                updateLastCacheData(CacheKlineData.CANDLE15MIN, jsonObject.getJSONArray("data").getJSONObject(0).get("candle"));
+                break;
+            case "swap/candle1800s":
+                updateLastCacheData(CacheKlineData.CANDLE30MIN, jsonObject.getJSONArray("data").getJSONObject(0).get("candle"));
+                break;
+            case "swap/candle3600s":
+                updateLastCacheData(CacheKlineData.CANDLE1HOUR, jsonObject.getJSONArray("data").getJSONObject(0).get("candle"));
+                break;
+            case "swap/candle14400s":
+                updateLastCacheData(CacheKlineData.CANDLE4HOUR, jsonObject.getJSONArray("data").getJSONObject(0).get("candle"));
+                break;
+            case "swap/candle86400s":
+                updateLastCacheData(CacheKlineData.CANDLE1DAY, jsonObject.getJSONArray("data").getJSONObject(0).get("candle"));
+                break;
+            case "swap/candle2678400s":
+                updateLastCacheData(CacheKlineData.CANDLE1WEEK, jsonObject.getJSONArray("data").getJSONObject(0).get("candle"));
+                break;
+        }
         log.info(DateFormatUtils.format(new Date(), DateUtils.TIME_STYLE_S4) + " Receive: " + s);
     }
 
+    private void updateLastCacheData(JSONArray jsonArray, Object target){
+        if (jsonArray.size() == APIConstants.KLINES_NUMBERS){
+            jsonArray.set(APIConstants.KLINES_NUMBERS-1,target);
+        }else{
+            log.error("Not update cache last data because json array size mismatch!");
+        }
+    }
 
+    private void insertDataToQueue(String ticker){
+        CollectDataBean bean = CollectDataBean.builder().ticker(ticker)
+                .candle3Min(CacheKlineData.CANDLE3MIN.toJSONString())
+                .candle5Min(CacheKlineData.CANDLE5MIN.toJSONString())
+                .candle15Min(CacheKlineData.CANDLE15MIN.toJSONString())
+                .candle30Min(CacheKlineData.CANDLE30MIN.toJSONString())
+                .candle1Hour(CacheKlineData.CANDLE1HOUR.toJSONString())
+                .candle4Hour(CacheKlineData.CANDLE4HOUR.toJSONString())
+                .candle1Day(CacheKlineData.CANDLE1DAY.toJSONString())
+                .candle1Week(CacheKlineData.CANDLE1WEEK.toJSONString())
+                .build();
+        CacheKlineData.queue.add(bean);
+    }
 }

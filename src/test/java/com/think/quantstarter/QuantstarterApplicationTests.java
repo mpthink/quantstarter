@@ -45,7 +45,7 @@ class QuantstarterApplicationTests {
         String start = DateUtils.timeToString(startDate,8);
         String end = DateUtils.timeToString(endTime, 8);
         String instrument_id = "BTC-USDT-SWAP";
-        String candlesApi = swapMarketAPIService.getHistoryCandlesApi(instrument_id, start, end, APIConstants.GRANULARITY1MIN);
+        String candlesApi = swapMarketAPIService.getCandlesApi(instrument_id, start, end, APIConstants.GRANULARITY1MIN);
         JSONArray jsonArray = JSONArray.parseArray(candlesApi);
         System.out.println(jsonArray.size());
         System.out.println(jsonArray);
