@@ -1,6 +1,7 @@
 package com.think.quantstarter.service;
 
 import com.alibaba.fastjson.JSONArray;
+import com.think.quantstarter.bean.CollectDataBean;
 import com.think.quantstarter.config.OkexConfig;
 import com.think.quantstarter.rest.constant.APIConstants;
 import com.think.quantstarter.rest.service.swap.SwapMarketAPIService;
@@ -49,11 +50,13 @@ public class DataCollectService {
 
     @Scheduled(cron = "1 0/1 * * * ?")
     private void insertToDB(){
-        JSONArray klines = getKlines(APIConstants.GRANULARITY3MIN);
-        CacheKlineData.CANDLE3MIN.clear();
-        if(klines != null && klines.size() != 0){
-            CacheKlineData.CANDLE3MIN = klines;
+        if(CacheKlineData.queue.size() < 60){
+            return;
         }
+        CollectDataBean poll;
+         while((poll=CacheKlineData.queue.poll()) != null){
+             log.info("Queue size: {}, data: {}", CacheKlineData.queue.size(), poll.toString());
+         }
     }
 
     @Scheduled(cron = "30 0/3 * * * ?")
