@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.think.quantstarter.dataCollect.manager.ICandlesService;
 import com.think.quantstarter.dataCollect.utils.ConvertToObjectUtil;
+import com.think.quantstarter.rest.constant.APIConstants;
 import com.think.quantstarter.utils.DateUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -35,11 +36,8 @@ public class InitGetCandlesJob {
             Thread.sleep(500);
             Date endTime = getEndTime(startTime, granularity);
             JSONArray candles = candlesService.getCandles(DateUtils.timeToString(startTime, 8), DateUtils.timeToString(endTime, 8), instrument_id, granularity);
-            if(candles == null){
+            if(candles == null || candles.size() == 0){
                 startTime = endTime;
-            }
-            if(candles.size() != RECORDS_SIZE){
-                continue;
             }else{
                 List<Object> objectList = convertJsonArrayToObjects(candles, clz);
                 System.out.println(objectList);
@@ -86,12 +84,15 @@ public class InitGetCandlesJob {
         Integer candles = Integer.valueOf(granularity);
         Calendar calendar=Calendar.getInstance();
         calendar.setTime(startTime);
-        calendar.set(Calendar.MINUTE, (calendar.get(Calendar.MINUTE) + RECORDS_SIZE * candles / 60));
+        calendar.add(Calendar.MINUTE, (calendar.get(Calendar.MINUTE) + RECORDS_SIZE * candles / 60));
         return calendar.getTime();
     }
 
     public static void main(String[] args) throws ParseException {
-
+        String START_TIME = "2018-12-06T00:00:00.000Z";
+        Date startTime = DateUtils.parseUTCTime(START_TIME);
+        Date endTime = getEndTime(startTime, APIConstants.GRANULARITY1DAY);
+        System.out.println(endTime);
     }
 
 }
