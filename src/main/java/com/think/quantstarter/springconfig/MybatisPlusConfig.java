@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
  * @date 2020/8/18 16:47
  */
 @Configuration
-@MapperScan("com.cmii.hunter.mapper")
+@MapperScan("com.think.quantstarter.dataCollect.mapper")
 public class MybatisPlusConfig {
     @Bean
     public PaginationInterceptor paginationInterceptor(){
