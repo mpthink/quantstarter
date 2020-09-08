@@ -3,7 +3,7 @@ package com.think.quantstarter.websocket;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.think.quantstarter.bean.CollectDataBean;
+import com.think.quantstarter.dataCollect.bean.CollectDataBean;
 import com.think.quantstarter.rest.constant.APIConstants;
 import com.think.quantstarter.service.CacheKlineData;
 import com.think.quantstarter.utils.DateUtils;

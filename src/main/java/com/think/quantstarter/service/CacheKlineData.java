@@ -1,7 +1,7 @@
 package com.think.quantstarter.service;
 
 import com.alibaba.fastjson.JSONArray;
-import com.think.quantstarter.bean.CollectDataBean;
+import com.think.quantstarter.dataCollect.bean.CollectDataBean;
 
 import java.util.LinkedList;
 import java.util.Queue;

@@ -98,6 +98,8 @@ public class APIConstants {
     public static final String GRANULARITY1HOUR = "3600";
     public static final String GRANULARITY2HOUR = "7200";
     public static final String GRANULARITY4HOUR = "14400";
+    public static final String GRANULARITY6HOUR = "21600";
+    public static final String GRANULARITY12HOUR = "43200";
     public static final String GRANULARITY1DAY = "86400";
     public static final String GRANULARITY1WEEK = "604800";
     public static final String GRANULARITY1MONTH = "2678400";

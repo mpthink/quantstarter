@@ -1,6 +1,36 @@
 spring:
   application:
     name: quantstarter
+  datasource:
+    name: mysql_hunterdb
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://127.0.0.1:3306/okexcandles?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&serverTimezone=GMT%2B8
+      username: root
+      password: 123456
+      filter: mergeStat
+      initial-size: 1
+      min-idle: 1
+      max-active: 10
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: select 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      max-pool-prepared-statement-per-connection-size: 10
+      # 配置监控统计拦截的filters，去掉后监控界面sql无法统计，'wall'用于防火墙
+      #filters: stat,wall,log4j
+      # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
+      connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+      # 合并多个DruidDataSource的监控数据
+      #spring.datasource.useGlobalDataSourceStat=true
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /druid/*
+        reset-enable: false
 
 okexconfig:
   wssUrl: wss://real.okex.com:8443/ws/v3
@@ -8,3 +38,31 @@ okexconfig:
   apiKey: test
   secretKey: test
   passphrase: test
+
+################# mybatis-plus ##################
+#refer to: https://mp.baomidou.com/config/#updatestrategy-since-3-1-2
+mybatis-plus:
+  mapper-locations: classpath:/mapper/*Mapper.xml
+  type-aliases-package: com.cmii.hunter.entity
+  global-config:
+    db-config:
+      id-type: auto
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+    lazy-loading-enabled: true
+    multiple-result-sets-enabled: true
+    default-executor-type: reuse
+
+################# logging ##################
+logging:
+  file.max-history: 10
+  file.max-size: 10MB
+  level:
+    root: info
+    com.cmii.hunter.mapper: debug
+    org.springframework: info
+  pattern:
+    file: '%d{yyyy/MM/dd-HH:mm} [%thread] %-5level %logger- %msg%n'
+  file:
+    name: ./logs/okexcollect.log

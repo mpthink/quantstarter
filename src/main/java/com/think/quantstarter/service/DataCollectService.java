@@ -1,8 +1,8 @@
 package com.think.quantstarter.service;
 
 import com.alibaba.fastjson.JSONArray;
-import com.think.quantstarter.bean.CollectDataBean;
 import com.think.quantstarter.config.OkexConfig;
+import com.think.quantstarter.dataCollect.bean.CollectDataBean;
 import com.think.quantstarter.rest.constant.APIConstants;
 import com.think.quantstarter.rest.service.swap.SwapMarketAPIService;
 import com.think.quantstarter.utils.DateUtils;
@@ -10,10 +10,8 @@ import com.think.quantstarter.websocket.WebSocketClient;
 import com.think.quantstarter.websocket.constant.ChannelConstants;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.Calendar;
 import java.util.Date;
@@ -33,7 +31,7 @@ public class DataCollectService {
     @Resource
     private OkexConfig okexConfig;
 
-    @PostConstruct
+    //@PostConstruct
     public void subscribeWSS() {
         WebSocketClient webSocketClient = new WebSocketClient();
         webSocketClient.connection(okexConfig.getWssUrl());
@@ -48,7 +46,7 @@ public class DataCollectService {
         get1WeekKline();
     }
 
-    @Scheduled(cron = "1 0/1 * * * ?")
+    //@Scheduled(cron = "1 0/1 * * * ?")
     private void insertToDB(){
         if(CacheKlineData.queue.size() < 60){
             return;
@@ -59,7 +57,7 @@ public class DataCollectService {
          }
     }
 
-    @Scheduled(cron = "30 0/3 * * * ?")
+    //@Scheduled(cron = "30 0/3 * * * ?")
     private void get3MinKline(){
         JSONArray klines = getKlines(APIConstants.GRANULARITY3MIN);
         CacheKlineData.CANDLE3MIN.clear();
@@ -68,7 +66,7 @@ public class DataCollectService {
         }
     }
 
-    @Scheduled(cron = "30 0/5 * * * ?")
+    //@Scheduled(cron = "30 0/5 * * * ?")
     private void get5MinKline(){
         JSONArray klines = getKlines(APIConstants.GRANULARITY5MIN);
         if(klines != null && klines.size() != 0){
@@ -76,7 +74,7 @@ public class DataCollectService {
         }
     }
 
-    @Scheduled(cron = "30 0/15 * * * ?")
+    //@Scheduled(cron = "30 0/15 * * * ?")
     private void get15MinKline(){
         JSONArray klines = getKlines(APIConstants.GRANULARITY15MIN);
         if(klines != null && klines.size() != 0){
@@ -84,7 +82,7 @@ public class DataCollectService {
         }
     }
 
-    @Scheduled(cron = "30 0/30 * * * ?")
+    //@Scheduled(cron = "30 0/30 * * * ?")
     private void get30MinKline(){
         JSONArray klines = getKlines(APIConstants.GRANULARITY30MIN);
         if(klines != null && klines.size() != 0){
@@ -92,7 +90,7 @@ public class DataCollectService {
         }
     }
 
-    @Scheduled(cron = "30 0 0/1 * * ?")
+    //@Scheduled(cron = "30 0 0/1 * * ?")
     private void get1HourKline(){
         JSONArray klines = getKlines(APIConstants.GRANULARITY1HOUR);
         if(klines != null && klines.size() != 0){
@@ -100,7 +98,7 @@ public class DataCollectService {
         }
     }
 
-    @Scheduled(cron = "30 0 0/4 * * ?")
+    //@Scheduled(cron = "30 0 0/4 * * ?")
     private void get4HourKline(){
         JSONArray klines = getKlines(APIConstants.GRANULARITY4HOUR);
         if(klines != null && klines.size() != 0){
@@ -108,7 +106,7 @@ public class DataCollectService {
         }
     }
 
-    @Scheduled(cron = "30 0 0 1/1 * ?")
+    //@Scheduled(cron = "30 0 0 1/1 * ?")
     private void get1DayKline(){
         JSONArray klines = getKlines(APIConstants.GRANULARITY1DAY);
         if(klines != null && klines.size() != 0){
@@ -116,7 +114,7 @@ public class DataCollectService {
         }
     }
 
-    @Scheduled(cron = "30 0 0 ? * 1")
+    //@Scheduled(cron = "30 0 0 ? * 1")
     private void get1WeekKline(){
         JSONArray klines = getKlines(APIConstants.GRANULARITY1WEEK);
         if(klines != null && klines.size() != 0){

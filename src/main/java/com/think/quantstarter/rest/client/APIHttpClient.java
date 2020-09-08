@@ -61,9 +61,9 @@ public class APIHttpClient {
             final Request.Builder requestBuilder = chain.request().newBuilder();
             final String timestamp = DateUtils.getUnixTime();
             //打印首行时间戳
-            System.out.println("时间戳timestamp={" + timestamp + "}");
+            //System.out.println("时间戳timestamp={" + timestamp + "}");
 
-            String simulated = "1";
+            //String simulated = "1";
             requestBuilder.headers(this.headers(chain.request(), timestamp));
             final Request request = requestBuilder.build();
             if (okexRestAPIConfig.isPrint()) {
