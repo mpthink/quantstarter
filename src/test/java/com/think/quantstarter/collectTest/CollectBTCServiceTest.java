@@ -1,7 +1,7 @@
 package com.think.quantstarter.collectTest;
 
 import com.think.quantstarter.dataCollect.entity.BtcCandles1d;
-import com.think.quantstarter.dataCollect.job.InitGetCandlesJob;
+import com.think.quantstarter.dataCollect.job.InitGetBtcCandlesJob;
 import com.think.quantstarter.dataCollect.service.IBtcCandles1dService;
 import com.think.quantstarter.rest.constant.APIConstants;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ import java.text.ParseException;
 public class CollectBTCServiceTest {
 
     @Resource
-    private InitGetCandlesJob job;
+    private InitGetBtcCandlesJob job;
 
     @Resource
     private IBtcCandles1dService btcCandles1dService;

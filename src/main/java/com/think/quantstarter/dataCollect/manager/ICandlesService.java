@@ -8,4 +8,6 @@ import com.alibaba.fastjson.JSONArray;
  */
 public interface ICandlesService {
     JSONArray getCandles(String start, String end, String instrument_id, String granularity);
+
+    JSONArray getCandles(String instrument_id, String granularity, Integer timeGap);
 }

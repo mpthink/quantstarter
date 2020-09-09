@@ -1,10 +1,9 @@
 package com.think.quantstarter.dataCollect.utils;
 
+import com.alibaba.fastjson.JSONArray;
+
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author mpthink
@@ -33,6 +32,38 @@ public class ConvertToObjectUtil {
             }
         }
         return t;
+    }
+
+    public static List<Object> convertJsonArrayToObjects(JSONArray jsonArray, Class clz){
+        List<Map<String, Object>> mapList = convertJsonArrayToListMap(jsonArray);
+        List<Object> objectList = new ArrayList<>();
+        mapList.forEach(map->{
+            try {
+                Object object = ConvertToObjectUtil.mapToObject(map, clz);
+                objectList.add(object);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        return objectList;
+    }
+
+
+    public static List<Map<String, Object>> convertJsonArrayToListMap(JSONArray jsonArray){
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        for (Object json : jsonArray) {
+            Map<String, Object> map = new HashMap<>();
+            JSONArray temp = (JSONArray) json;
+            map.put("candleTime",String.valueOf(temp.get(0)));
+            map.put("open",Double.valueOf(temp.get(1).toString()));
+            map.put("high",Double.valueOf(temp.get(2).toString()));
+            map.put("low",Double.valueOf(temp.get(3).toString()));
+            map.put("close",Double.valueOf(temp.get(4).toString()));
+            map.put("volume",Double.valueOf(temp.get(5).toString()));
+            map.put("currencyVolume",Double.valueOf(temp.get(6).toString()));
+            mapList.add(map);
+        }
+        return mapList;
     }
 
 }
