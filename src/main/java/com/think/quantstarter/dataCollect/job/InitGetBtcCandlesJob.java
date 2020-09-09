@@ -89,8 +89,7 @@ public class InitGetBtcCandlesJob {
                 startTime = endTime;
             }else{
                 List<Object> objectList = ConvertToObjectUtil.convertJsonArrayToObjects(candles, clz);
-                System.out.println(objectList);
-                service.saveBatch(objectList);
+                service.saveOrUpdateBatch(objectList);
                 startTime = endTime;
             }
         }

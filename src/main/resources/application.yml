@@ -2,7 +2,7 @@ spring:
   application:
     name: quantstarter
   datasource:
-    name: mysql_hunterdb
+    name: mysql_okexcandles
     type: com.alibaba.druid.pool.DruidDataSource
     druid:
       driver-class-name: com.mysql.cj.jdbc.Driver
@@ -43,7 +43,7 @@ okexconfig:
 #refer to: https://mp.baomidou.com/config/#updatestrategy-since-3-1-2
 mybatis-plus:
   mapper-locations: classpath:/mapper/*Mapper.xml
-  type-aliases-package: com.cmii.hunter.entity
+  type-aliases-package: com.think.quantstarter.dataCollect.entity
   global-config:
     db-config:
       id-type: auto
@@ -60,7 +60,7 @@ logging:
   file.max-size: 10MB
   level:
     root: info
-    com.cmii.hunter.mapper: debug
+    com.think.quantstarter.dataCollect.mapper: info
     org.springframework: info
   pattern:
     file: '%d{yyyy/MM/dd-HH:mm} [%thread] %-5level %logger- %msg%n'

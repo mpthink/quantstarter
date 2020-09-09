@@ -57,46 +57,57 @@ public class BtcCandlesCollectJob {
         getCandles(APIConstants.GRANULARITY1MIN, BtcCandles1m.class, btcCandles1mService);
     }
 
+    @Scheduled(cron = "12 0/3 * * * ?")
     public void get3MinCandles(){
         getCandles(APIConstants.GRANULARITY3MIN, BtcCandles3m.class, btcCandles3mService);
     }
 
+    @Scheduled(cron = "14 0/5 * * * ?")
     public void get5MinCandles(){
         getCandles(APIConstants.GRANULARITY5MIN, BtcCandles5m.class, btcCandles5mService);
     }
 
+    @Scheduled(cron = "16 0/15 * * * ?")
     public void get15MinCandles(){
         getCandles(APIConstants.GRANULARITY15MIN, BtcCandles15m.class, btcCandles15mService);
     }
 
+    @Scheduled(cron = "18 0/30 * * * ?")
     public void get30MinCandles(){
         getCandles(APIConstants.GRANULARITY30MIN, BtcCandles30m.class, btcCandles30mService);
     }
 
+    @Scheduled(cron = "20 0 0/1 * * ?")
     public void get1HourCandles(){
         getCandles(APIConstants.GRANULARITY1HOUR, BtcCandles1h.class, btcCandles1hService);
     }
 
+    @Scheduled(cron = "22 0 0/2 * * ?")
     public void get2HourCandles(){
         getCandles(APIConstants.GRANULARITY2HOUR, BtcCandles2h.class, btcCandles2hService);
     }
 
+    @Scheduled(cron = "24 0 0/4 * * ?")
     public void get4HourCandles(){
         getCandles(APIConstants.GRANULARITY4HOUR, BtcCandles4h.class, btcCandles4hService);
     }
 
+    @Scheduled(cron = "26 0 0/6 * * ?")
     public void get6HourCandles(){
         getCandles(APIConstants.GRANULARITY6HOUR, BtcCandles6h.class, btcCandles6hService);
     }
 
+    @Scheduled(cron = "28 0 0/12 * * ?")
     public void get12HourCandles(){
         getCandles(APIConstants.GRANULARITY12HOUR, BtcCandles12h.class, btcCandles12hService);
     }
 
+    @Scheduled(cron = "30 0 0 1/1 * ?")
     public void get1DayCandles(){
         getCandles(APIConstants.GRANULARITY1DAY, BtcCandles1d.class, btcCandles1dService);
     }
 
+    @Scheduled(cron = "32 0 0 ? * 1")
     public void get1WeekCandles(){
         getCandles(APIConstants.GRANULARITY1WEEK, BtcCandles1w.class, btcCandles1wService);
     }

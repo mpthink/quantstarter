@@ -90,7 +90,7 @@ public class InitGetEthCandlesJob {
                 startTime = endTime;
             }else{
                 List<Object> objectList = ConvertToObjectUtil.convertJsonArrayToObjects(candles, clz);
-                service.saveBatch(objectList);
+                service.saveOrUpdateBatch(objectList);
                 startTime = endTime;
             }
         }
