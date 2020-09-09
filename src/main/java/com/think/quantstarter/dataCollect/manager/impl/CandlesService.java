@@ -33,7 +33,7 @@ public class CandlesService implements ICandlesService {
     public JSONArray getCandles(String instrument_id, String granularity, Integer timeGap){
         Calendar calendar = Calendar.getInstance();
         Date endTime = calendar.getTime();
-        calendar.add(Calendar.MINUTE, (calendar.get(Calendar.MINUTE) - timeGap * Integer.valueOf(granularity) / 60));
+        calendar.add(Calendar.MINUTE, -timeGap * Integer.valueOf(granularity) / 60);
         Date startDate = calendar.getTime();
         String start = DateUtils.timeToString(startDate,8);
         String end = DateUtils.timeToString(endTime, 8);

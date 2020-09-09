@@ -100,7 +100,7 @@ public class InitGetEthCandlesJob {
         Integer candles = Integer.valueOf(granularity);
         Calendar calendar=Calendar.getInstance();
         calendar.setTime(startTime);
-        calendar.add(Calendar.MINUTE, (calendar.get(Calendar.MINUTE) + RECORDS_SIZE * candles / 60));
+        calendar.add(Calendar.MINUTE, RECORDS_SIZE * candles / 60);
         return calendar.getTime();
     }
 
