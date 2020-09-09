@@ -12,6 +12,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.text.ParseException;
 import java.util.Calendar;
@@ -55,10 +56,10 @@ public class InitGetBchCandlesJob {
     @Resource
     private IBchCandles1wService bchCandles1wService;
 
-    private static String START_TIME = "2018-12-06T00:00:00.000Z";
-    private static Integer RECORDS_SIZE = 30;
+    private static String START_TIME = "2019-06-06T00:00:00.000Z";
+    private static Integer RECORDS_SIZE = 60;
 
-
+    @PostConstruct
     public void init(){
         initGetBCH(APIConstants.GRANULARITY1MIN, BchCandles1m.class, bchCandles1mService);
         initGetBCH(APIConstants.GRANULARITY3MIN, BchCandles3m.class, bchCandles3mService);
