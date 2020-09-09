@@ -102,12 +102,12 @@ public class EthCandlesCollectJob {
         getCandles(APIConstants.GRANULARITY12HOUR, EthCandles12h.class, ethCandles12hService);
     }
 
-    @Scheduled(cron = "40 0 1/1 * ?")
+    @Scheduled(cron = "40 0 0 1/1 * ?")
     public void get1DayCandles(){
         getCandles(APIConstants.GRANULARITY1DAY, EthCandles1d.class, ethCandles1dService);
     }
 
-    @Scheduled(cron = "41 0 ? * 1")
+    @Scheduled(cron = "41 0 0 ? * 1")
     public void get1WeekCandles(){
         getCandles(APIConstants.GRANULARITY1WEEK, EthCandles1w.class, ethCandles1wService);
     }
