@@ -9,7 +9,6 @@ import com.think.quantstarter.dataCollect.utils.ConvertToObjectUtil;
 import com.think.quantstarter.rest.constant.APIConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -18,7 +17,7 @@ import java.util.List;
  * @author mpthink
  * @date 2020/9/7 19:39
  */
-@Service
+//@Service
 @Slf4j
 public class EthCandlesCollectJob {
 

@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
  * bch 5分钟K线表
  * </p>
  *
- * @author hunter
- * @since 2020-09-07
+ * @author mpthink
+ * @since 2020-09-16
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -70,6 +70,24 @@ public class BchCandles5m extends Model<BchCandles5m> {
 
     @TableField("gmt_create")
     private LocalDateTime gmtCreate;
+
+    /**
+     * EMA5值
+     */
+    @TableField("ema5")
+    private Double ema5;
+
+    /**
+     * EMA10值
+     */
+    @TableField("ema10")
+    private Double ema10;
+
+    /**
+     * EMA20值
+     */
+    @TableField("ema20")
+    private Double ema20;
 
 
     @Override

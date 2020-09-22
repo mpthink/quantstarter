@@ -10,7 +10,6 @@ import com.think.quantstarter.rest.constant.APIConstants;
 import com.think.quantstarter.utils.DateUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -23,7 +22,7 @@ import java.util.List;
  * @author mpthink
  * @date 2020/9/7 22:29
  */
-@Service
+//@Service
 @Slf4j
 public class InitGetBchCandlesJob {
 

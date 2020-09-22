@@ -20,7 +20,7 @@ public class OkexGenerator {
         // 全局配置
         GlobalConfig gc = new GlobalConfig();
         gc.setOutputDir("C://temp3");
-        gc.setAuthor("hunter");
+        gc.setAuthor("mpthink");
         gc.setOpen(true);
         gc.setFileOverride(true);
         gc.setActiveRecord(true);

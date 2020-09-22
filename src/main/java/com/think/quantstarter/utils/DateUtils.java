@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -25,7 +26,8 @@ public class DateUtils {
     public static String TIME_STYLE_S5 = "yyyy-MM-dd HH:mm:ss:S E zZ";
     public static String TIME_STYLE_S6 = "yyyyMMddHHmmssS";
     public static String TIME_STYLE_S7 = "yyyy年MM月dd日HH时mm分ss秒";
-    public static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
+    public static String TIME_STYLE_S8 = "yyyy-MM-dd HH";
+    public static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
     static {
         DateUtils.SDF.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -157,5 +159,38 @@ public class DateUtils {
         final BigDecimal bd1 = new BigDecimal(decimalTime);
         final BigDecimal bd2 = new BigDecimal(1000);
         return new Date(bd1.multiply(bd2).longValue());
+    }
+
+    /**
+     * Add given minutes and return UTC time
+     * @param candleTime
+     * @param add
+     * @return
+     */
+    public static String addMinutes(String candleTime, int add){
+        try {
+            TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+            Date date = DateUtils.parseUTCTime(candleTime);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            calendar.add(Calendar.MINUTE,add);
+            Date newDate = calendar.getTime();
+            return DateUtils.timeToString(newDate, 8);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String getUTCWithoutMinutes(String candleTime){
+        try {
+            SimpleDateFormat format = new SimpleDateFormat(TIME_STYLE_S8);
+            String time = format.format(parseUTCTime(candleTime));
+            Date date = format.parse(time);
+            return timeToString(date, 8);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
