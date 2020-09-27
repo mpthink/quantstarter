@@ -98,8 +98,10 @@ public class Eth5mAnalysisTest {
                 Double current4hEma5 = CandleUtil.getEMA(Arrays.asList(ethCandles4h.getEma5(), candleNew.getClose()), 5);
                 Double current4hEma10 = CandleUtil.getEMA(Arrays.asList(ethCandles4h.getEma10(), candleNew.getClose()), 10);
                 //以下两个条件符合要求，准备下单（后续可以根据策略调整这个地方来调整买入点） 买入价格为当前5分钟下一分钟的开盘价
+                //if ((minuteEma5 - minuteEma10) > 0 && (current4hEma5 - current4hEma10) > 0) {
                 if ((minuteEma5 - minuteEma10) > 0 && (current1hEma5 - current1hEma10) > 0 && (current4hEma5 - current4hEma10) > 0) {
                 //if ((minuteEma5 - minuteEma10) > 0 && (current1hEma5 - current1hEma10) > 0 && (current4hEma5 - current4hEma10) > 0 && (candleNew.getClose()-ethCandles4h.getOpen())>0) {
+
                     Double buyLongPrice = getBuyPrice(candleNew.getCandleTime());
                     //计算止损价，取过去5分钟20次的平均值和最低值， 止盈按定时时间来做
                     Double planLossPrice =getLossPrice(candleNew, buyLongPrice, "long");
@@ -125,7 +127,7 @@ public class Eth5mAnalysisTest {
                         System.out.println(" 按时卖出： " + lastClose + " 盈亏： " + (lastClose - buyLongPrice) +","+ (lastClose-buyLongPrice)/buyLongPrice*1000);
                     }
                 }
-
+                //if ((minuteEma5 - minuteEma10) < 0 && (current4hEma5 - current4hEma10) < 0) {
                 if ((minuteEma5 - minuteEma10) < 0 && (current1hEma5 - current1hEma10) < 0 && (current4hEma5 - current4hEma10) < 0) {
                 //if ((minuteEma5 - minuteEma10) < 0 && (current1hEma5 - current1hEma10) < 0 && (current4hEma5 - current4hEma10) < 0 && (candleNew.getClose()-ethCandles4h.getOpen())<0) {
                     Double buyShortPrice = getBuyPrice(candleNew.getCandleTime());
@@ -159,7 +161,7 @@ public class Eth5mAnalysisTest {
 
     private Double getLossPrice(EthCandles5m candle, Double buyPrice, String type){
         String end = candle.getCandleTime();
-        String start = DateUtils.addMinutes(end, -100);
+        String start = DateUtils.addMinutes(end, -40);
         QueryWrapper<EthCandles5m> wrapper = new QueryWrapper<>();
         wrapper.ge("candle_time", start);
         wrapper.le("candle_time", end);
@@ -219,6 +221,60 @@ public class Eth5mAnalysisTest {
             return false;
         } else {
             return true;
+        }
+    }
+
+    private boolean hourTrend(String hourEnd, String expected){
+        QueryWrapper<EthCandles1h> wrapper = new QueryWrapper<>();
+        wrapper.lt("candle_time", hourEnd);
+        wrapper.orderByDesc("candle_time");
+        wrapper.last("limit 2");
+        List<EthCandles1h> ethCandles1hs = ethCandles1hMapper.selectList(wrapper);
+        EthCandles1h first =  ethCandles1hs.get(1);
+        EthCandles1h second = ethCandles1hs.get(0);
+        if(expected.equals("up")){
+            Double secondGap = second.getEma5() - second.getEma10();
+            Double firstGap = first.getEma5() - first.getEma10();
+            if((secondGap - firstGap) > 0){
+                return true;
+            }else {
+                return false;
+            }
+        }else {
+            Double secondGap = second.getEma10() - second.getEma5();
+            Double firstGap = first.getEma10() - first.getEma5();
+            if((secondGap - firstGap) > 0){
+                return true;
+            }else {
+                return false;
+            }
+        }
+    }
+
+    private boolean hour4Trend(String hour4End, String expected, double ema5, double ema10){
+        QueryWrapper<EthCandles4h> wrapper = new QueryWrapper<>();
+        wrapper.lt("candle_time", hour4End);
+        wrapper.orderByDesc("candle_time");
+        wrapper.last("limit 2");
+        List<EthCandles4h> ethCandles4hs = ethCandles4hMapper.selectList(wrapper);
+//        EthCandles4h first =  ethCandles4hs.get(1);
+        EthCandles4h second = ethCandles4hs.get(1);
+        if(expected.equals("up")){
+            Double secondGap = second.getEma5() - second.getEma10();
+            Double firstGap = ema5 - ema10;
+            if((secondGap - firstGap) > 0){
+                return true;
+            }else {
+                return false;
+            }
+        }else {
+            Double secondGap = second.getEma10() - second.getEma5();
+            Double firstGap = ema10 - ema5;
+            if((secondGap - firstGap) > 0){
+                return true;
+            }else {
+                return false;
+            }
         }
     }
 

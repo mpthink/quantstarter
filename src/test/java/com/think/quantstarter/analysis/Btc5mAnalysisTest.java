@@ -106,18 +106,22 @@ public class Btc5mAnalysisTest {
                 Double current4hEma5 = CandleUtil.getEMA(Arrays.asList(btcCandles4h.getEma5(), candleNew.getClose()), 5);
                 Double current4hEma10 = CandleUtil.getEMA(Arrays.asList(btcCandles4h.getEma10(), candleNew.getClose()), 10);
                 //以下两个条件符合要求，准备下单（后续可以根据策略调整这个地方来调整买入点） 买入价格为当前5分钟下一分钟的开盘价
-                if ((minuteEma5 - minuteEma10) > 0 && (current1hEma5 - current1hEma10) > 0 && (current4hEma5 - current4hEma10) > 0) {
+                if ((minuteEma5 - minuteEma10) > 0 && (current1hEma5 - current1hEma10) > 0 && (current4hEma5 - current4hEma10) > 0 && hour4Trend(hourEnd, "up", current4hEma5, current4hEma10)) {
+                    //if ((minuteEma5 - minuteEma10) > 0 && (current4hEma5 - current4hEma10) > 0) {
+
+                    hour4Trend(hourEnd, "down", current4hEma5, current4hEma10);
+
                     //判断是否在120分钟内多次买入
-                    if(countTimeGapMinutes(candleNew.getCandleTime(), lastBuyTime) < defaultGap){
+                    if (countTimeGapMinutes(candleNew.getCandleTime(), lastBuyTime) < defaultGap) {
                         continue;
-                    }else {
+                    } else {
                         lastBuyTime = candleNew.getCandleTime();
                     }
 
                     Double buyLongPrice = getBuyPrice(candleNew.getCandleTime());
                     //计算止损价，取过去5分钟20次的平均值和最低值， 止盈按定时时间来做
-                    Double planLossPrice =getLossPrice(candleNew, buyLongPrice, "long");
-                    System.out.print(candleNew.getCandleTime() +" " +candleNew.getOpen()+" 适合买多,买入价：" + buyLongPrice +" 止损价："+planLossPrice);
+                    Double planLossPrice = getLossPrice(candleNew, buyLongPrice, "long");
+                    System.out.print(candleNew.getCandleTime() + " " + candleNew.getOpen() + " 适合买多,买入价：" + buyLongPrice + " 止损价：" + planLossPrice);
                     //由于1分钟数据有限，不能获取当前1分钟的价格，按照接下来5分钟的走势，按1个小时定时止损来看看是否会止损或者退出
                     String tempStart = DateUtils.addMinutes(candleNew.getCandleTime(), 5);
                     String tempEnd = DateUtils.addMinutes(candleNew.getCandleTime(), 125);
@@ -127,33 +131,36 @@ public class Btc5mAnalysisTest {
                     wrapper.orderByAsc("candle_time");
                     List<BtcCandles5m> tempList = btcCandles5mMapper.selectList(wrapper);
                     boolean flag = true;
-                    for(BtcCandles5m candles5m:tempList){
-                        if(candles5m.getLow()<=planLossPrice){
-                            System.out.println("达到止损价： 卖出,亏损：" + (planLossPrice - buyLongPrice) + "," + (planLossPrice - buyLongPrice)/buyLongPrice*1000);
+                    for (BtcCandles5m candles5m : tempList) {
+                        if (candles5m.getLow() <= planLossPrice) {
+                            System.out.println("达到止损价： 卖出,亏损：" + (planLossPrice - buyLongPrice) + "," + (planLossPrice - buyLongPrice) / buyLongPrice * 1000);
                             flag = false;
                             countTimes(planLossPrice - buyLongPrice);
                             break;
                         }
                     }
-                    if(flag){
-                        Double lastClose = tempList.get(tempList.size()-1).getClose();
-                        System.out.println(" 按时卖出： " + lastClose + " 盈亏： " + (lastClose - buyLongPrice) +","+ (lastClose-buyLongPrice)/buyLongPrice*1000);
-                        countTimes(lastClose-buyLongPrice);
+                    if (flag) {
+                        Double lastClose = tempList.get(tempList.size() - 1).getClose();
+                        System.out.println(" 按时卖出： " + lastClose + " 盈亏： " + (lastClose - buyLongPrice) + "," + (lastClose - buyLongPrice) / buyLongPrice * 1000);
+                        countTimes(lastClose - buyLongPrice);
                     }
                 }
-                if ((minuteEma5 - minuteEma10) < 0 && (current1hEma5 - current1hEma10) < 0 && (current4hEma5 - current4hEma10) < 0) {
+                if ((minuteEma5 - minuteEma10) < 0 && (current1hEma5 - current1hEma10) < 0 && (current4hEma5 - current4hEma10) < 0 && hour4Trend(hourEnd, "down", current4hEma5, current4hEma10)) {
+                //if ((minuteEma5 - minuteEma10) < 0 && (current4hEma5 - current4hEma10) < 0) {
+
+                    hour4Trend(hourEnd, "down", current4hEma5, current4hEma10);
 
                     //判断是否在120分钟内多次买入
-                    if(countTimeGapMinutes(candleNew.getCandleTime(), lastBuyTime) < defaultGap){
+                    if (countTimeGapMinutes(candleNew.getCandleTime(), lastBuyTime) < defaultGap) {
                         continue;
-                    }else {
+                    } else {
                         lastBuyTime = candleNew.getCandleTime();
                     }
 
                     Double buyShortPrice = getBuyPrice(candleNew.getCandleTime());
                     //计算止损价，取过去5分钟20次的平均值和最低值， 止盈按定时时间来做
-                    Double planLossPrice =getLossPrice(candleNew, buyShortPrice, "short");
-                    System.out.print(candleNew.getCandleTime() +" " +candleNew.getOpen()+" 适合卖空,买入价：" + buyShortPrice +" 止损价："+planLossPrice);
+                    Double planLossPrice = getLossPrice(candleNew, buyShortPrice, "short");
+                    System.out.print(candleNew.getCandleTime() + " " + candleNew.getOpen() + " 适合卖空,买入价：" + buyShortPrice + " 止损价：" + planLossPrice);
                     //由于1分钟数据有限，不能获取当前1分钟的价格，按照接下来5分钟的走势，按1个小时定时止损来看看是否会止损或者退出
                     String tempStart = DateUtils.addMinutes(candleNew.getCandleTime(), 5);
                     String tempEnd = DateUtils.addMinutes(candleNew.getCandleTime(), 65);
@@ -163,17 +170,17 @@ public class Btc5mAnalysisTest {
                     wrapper.orderByAsc("candle_time");
                     List<BtcCandles5m> tempList = btcCandles5mMapper.selectList(wrapper);
                     boolean flag = true;
-                    for(BtcCandles5m candles5m:tempList){
-                        if(candles5m.getHigh()>=planLossPrice){
-                            System.out.println("达到止损价： 卖出,亏损：" + (buyShortPrice - planLossPrice) + "," + (buyShortPrice - planLossPrice)/buyShortPrice*1000);
+                    for (BtcCandles5m candles5m : tempList) {
+                        if (candles5m.getHigh() >= planLossPrice) {
+                            System.out.println("达到止损价： 卖出,亏损：" + (buyShortPrice - planLossPrice) + "," + (buyShortPrice - planLossPrice) / buyShortPrice * 1000);
                             flag = false;
                             countTimes(buyShortPrice - planLossPrice);
                             break;
                         }
                     }
-                    if(flag){
-                        Double lastClose = tempList.get(tempList.size()-1).getClose();
-                        System.out.println(" 按时卖出： " + lastClose + " 盈亏： " + (buyShortPrice - lastClose) + "," + (buyShortPrice - lastClose)/buyShortPrice*1000);
+                    if (flag) {
+                        Double lastClose = tempList.get(tempList.size() - 1).getClose();
+                        System.out.println(" 按时卖出： " + lastClose + " 盈亏： " + (buyShortPrice - lastClose) + "," + (buyShortPrice - lastClose) / buyShortPrice * 1000);
                         countTimes(buyShortPrice - lastClose);
                     }
                 }
@@ -183,7 +190,7 @@ public class Btc5mAnalysisTest {
         System.out.println("盈利次数:" + positiveTimes + " 亏损次数: " + negativeTimes);
     }
 
-    private Double getLossPrice(BtcCandles5m candle, Double buyPrice, String type){
+    private Double getLossPrice(BtcCandles5m candle, Double buyPrice, String type) {
         String end = candle.getCandleTime();
         String start = DateUtils.addMinutes(end, -100);
         QueryWrapper<BtcCandles5m> wrapper = new QueryWrapper<>();
@@ -195,25 +202,25 @@ public class Btc5mAnalysisTest {
         Double lowest = btcCandles5ms.stream().mapToDouble(BtcCandles5m::getLow).min().getAsDouble();
         Double highSum = btcCandles5ms.stream().mapToDouble(BtcCandles5m::getHigh).sum();
         Double lowSum = btcCandles5ms.stream().mapToDouble(BtcCandles5m::getLow).sum();
-        Double avgMargin = (highSum-lowSum)/btcCandles5ms.size();
+        Double avgMargin = (highSum - lowSum) / btcCandles5ms.size();
         //计划损失 1.5N的价格
         Double planLoss = 1.5 * avgMargin;
-        if(type.equals("long")){
-            return Math.max(buyPrice-planLoss, lowest);
-        }else{
+        if (type.equals("long")) {
+            return Math.max(buyPrice - planLoss, lowest);
+        } else {
             return Math.min(buyPrice + planLoss, highest);
         }
     }
 
     //获取买入价，一般等于下一个5分钟的开盘价获取下一个一分钟的开盘价
-    private Double getBuyPrice(String time){
+    private Double getBuyPrice(String time) {
         String buyTime = DateUtils.addMinutes(time, 1);
         BtcCandles1m btcCandles1m = btcCandles1mMapper.selectById(buyTime);
-        if (btcCandles1m == null){
+        if (btcCandles1m == null) {
             buyTime = DateUtils.addMinutes(time, 5);
             BtcCandles5m btcCandles5m = btcCandles5mMapper.selectById(buyTime);
             return btcCandles5m.getOpen();
-        }else {
+        } else {
             return btcCandles1m.getOpen();
         }
     }
@@ -246,19 +253,46 @@ public class Btc5mAnalysisTest {
     }
 
     @SneakyThrows
-    private long countTimeGapMinutes(String time1, String time2){
+    private long countTimeGapMinutes(String time1, String time2) {
         Date start = DateUtils.parseUTCTime(time1);
         Date end = DateUtils.parseUTCTime(time2);
-        long gap = (end.getTime() - start .getTime())/1000;
-        long min = gap/60;
+        long gap = (end.getTime() - start.getTime()) / 1000;
+        long min = gap / 60;
         return Math.abs(min);
     }
 
-    private void countTimes(double value){
-        if(value>0){
+    private void countTimes(double value) {
+        if (value > 0) {
             positiveTimes++;
-        }else {
+        } else {
             negativeTimes++;
+        }
+    }
+
+    private boolean hour4Trend(String hour4End, String expected, double ema5, double ema10) {
+        QueryWrapper<BtcCandles4h> wrapper = new QueryWrapper<>();
+        wrapper.lt("candle_time", hour4End);
+        wrapper.orderByDesc("candle_time");
+        wrapper.last("limit 2");
+        List<BtcCandles4h> ethCandles4hs = btcCandles4hMapper.selectList(wrapper);
+//        EthCandles4h first =  ethCandles4hs.get(1);
+        BtcCandles4h second = ethCandles4hs.get(1);
+        if (expected.equals("up")) {
+            Double secondGap = second.getEma5() - second.getEma10();
+            Double firstGap = ema5 - ema10;
+            if ((secondGap - firstGap) > 0) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            Double secondGap = second.getEma10() - second.getEma5();
+            Double firstGap = ema10 - ema5;
+            if ((secondGap - firstGap) > 0) {
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 

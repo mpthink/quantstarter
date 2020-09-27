@@ -1,19 +1,42 @@
 package com.think.quantstarter;
 
-import com.think.quantstarter.utils.DateUtils;
-
 import java.text.ParseException;
-import java.util.Date;
 
 /**
  * @author mpthink
  * @date 2020/8/11 16:15
  */
 public class MainTest {
-    public static void main(String[] args) throws ParseException {
 
-        Date date = DateUtils.parseUTCTime("2020-09-08T12:40:00.000Z");
-        System.out.println(date);
+    //计划损失N的倍数
+    private static Double[] lossNArray = new Double[]{0.5, 1.0, 1.5, 2.0, 2.5, 3.0};
+    //最大损失取过去多少分钟的
+    private static Integer[] lossMArray = new Integer[]{30, 40, 60, 80, 90, 120};
+    //最长持有多久
+    private static Integer[] handMArray = new Integer[]{35, 65, 95, 125, 155, 185, 215, 245};
+    //条件判断随机
+    private static Boolean[] booleanArray = new Boolean[]{true, false};
+    //多长时间内不买第二单
+    private static Integer[] intervalArray = new Integer[]{0, 60, 90, 120, 150, 180, 210, 240};
+
+
+    static Object getRanInArr(Object[] array){
+        int length=array.length;
+        int index= (int) (Math.random()*length);
+        return array[index];
+    }
+
+    public static void main(String[] args) throws ParseException {
+        for(int i=0;i<20;i++)
+        System.out.println(getRanInArr(lossNArray));
+
+
+
+
+
+
+//        Date date = DateUtils.parseUTCTime("2020-09-08T12:40:00.000Z");
+//        System.out.println(date);
 
 //        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 //        String candleTime = "2020-09-04T22:35:00.000Z";
