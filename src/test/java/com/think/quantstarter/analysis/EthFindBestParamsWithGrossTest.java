@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  */
 @SpringBootTest
 @Slf4j
-public class EthFindBestParamsTest {
+public class EthFindBestParamsWithGrossTest {
 
     @Resource
     private EthCandles5mMapper ethCandles5mMapper;
@@ -55,6 +55,10 @@ public class EthFindBestParamsTest {
 
     private static int gainTimes = 0;
     private static int lossTimes = 0;
+
+    private static int stopTimes = 0;
+
+    private static double lossAVG = 0;
 
     @Test
     public void testMaxMap() {
@@ -200,11 +204,25 @@ public class EthFindBestParamsTest {
 
                 if (flag > 0 && hour1EmaC && hour4EmaC && hour1TrendC && hour4TrendC) {
                     //买涨
+                    if(stopTimes >= 2){
+                        stopTimes++;
+                        if(stopTimes == 6){
+                            stopTimes=0;
+                        }
+                        continue;
+                    }
                     Double planLossPrice = getLossPrice(candleNew, buyPrice, flag, lossN, lossM);
                     sellAndRecord(candleNew.getCandleTime(), buyPrice, planLossPrice, flag, handInTime, sum);
                 }
                 if (flag < 0 && hour1EmaC && hour4EmaC && hour1TrendC && hour4TrendC) {
                     //买跌
+                    if(stopTimes >= 2){
+                        stopTimes++;
+                        if(stopTimes == 6){
+                            stopTimes=0;
+                        }
+                        continue;
+                    }
                     Double planLossPrice = getLossPrice(candleNew, buyPrice, flag, lossN, lossM);
                     sellAndRecord(candleNew.getCandleTime(), buyPrice, planLossPrice, flag, handInTime, sum);
                 }
@@ -230,6 +248,14 @@ public class EthFindBestParamsTest {
                     sum.add(loss / buyPrice * 1000);
                     log.info("做多止损," + time + "," + buyPrice + "," + planLossPrice + "," + loss + "," + loss / buyPrice * 1000);
                     lossTimes++;
+                    stopTimes++;
+                    sellflag = false;
+                    break;
+                }
+                if((candles5m.getHigh()-buyPrice)>=6*lossAVG){
+                    sum.add((candles5m.getHigh()-buyPrice) / buyPrice * 1000);
+                    log.info("做多止盈," + time + "," + buyPrice + "," + planLossPrice + "," + (candles5m.getHigh()-buyPrice) + "," + (candles5m.getHigh()-buyPrice) / buyPrice * 1000);
+                    gainTimes++;
                     sellflag = false;
                     break;
                 }
@@ -241,6 +267,7 @@ public class EthFindBestParamsTest {
                     gainTimes++;
                 }else{
                     lossTimes++;
+                    stopTimes++;
                 }
                 sum.add(loss / buyPrice * 1000);
                 log.info("做多按时," + time + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
@@ -252,6 +279,14 @@ public class EthFindBestParamsTest {
                     sum.add(loss / buyPrice * 1000);
                     log.info("做空止损," + time + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - planLossPrice) + "," + (buyPrice - planLossPrice) / buyPrice * 1000);
                     lossTimes++;
+                    stopTimes++;
+                    sellflag = false;
+                    break;
+                }
+                if((buyPrice - candles5m.getLow())>=6*lossAVG){
+                    sum.add((buyPrice - candles5m.getLow()) / buyPrice * 1000);
+                    log.info("做空止盈," + time + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - candles5m.getLow()) + "," + (buyPrice - candles5m.getLow()) / buyPrice * 1000);
+                    gainTimes++;
                     sellflag = false;
                     break;
                 }
@@ -263,6 +298,7 @@ public class EthFindBestParamsTest {
                     gainTimes++;
                 }else{
                     lossTimes++;
+                    stopTimes++;
                 }
                 sum.add(loss / buyPrice * 1000);
                 log.info("做空按时," + time + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
@@ -412,6 +448,7 @@ public class EthFindBestParamsTest {
         Double lowSum = ethCandles5ms.stream().mapToDouble(EthCandles5m::getLow).sum();
         Double avgMargin = (highSum - lowSum) / ethCandles5ms.size();
         //计划损失 1.5N的价格
+        lossAVG = avgMargin;
         Double planLoss = lossN * avgMargin;
         if (flag > 0) {
             return Math.max(buyPrice - planLoss, lowest);
