@@ -1,9 +1,11 @@
 package com.think.quantstarter.pilot.service;
 
+import com.alibaba.fastjson.JSON;
 import com.think.quantstarter.rest.bean.swap.param.CancelOrderAlgo;
 import com.think.quantstarter.rest.bean.swap.param.PpOrder;
 import com.think.quantstarter.rest.bean.swap.param.SwapOrderParam;
 import com.think.quantstarter.rest.bean.swap.result.PerOrderResult;
+import com.think.quantstarter.rest.bean.swap.result.SwapOrderResultVO;
 import com.think.quantstarter.rest.enums.FuturesTransactionTypeEnum;
 import com.think.quantstarter.rest.service.swap.SwapTradeAPIService;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +52,7 @@ public class EthTradeService {
      * @param sl_trigger_price 止损触发价格
      * @return
      */
-    public String swapOrderAlgo(FuturesTransactionTypeEnum type, String tp_trigger_price, String sl_trigger_price){
+    public SwapOrderResultVO swapOrderAlgo(FuturesTransactionTypeEnum type, String tp_trigger_price, String sl_trigger_price){
 
         SwapOrderParam swapOrderParam = SwapOrderParam.builder()
                 .instrument_id(eth_instrument_id)
@@ -62,7 +64,7 @@ public class EthTradeService {
                 .sl_trigger_price(sl_trigger_price)
                 .sl_trigger_type("2")
                 .build();
-        return swapTradeAPIService.swapOrderAlgo(swapOrderParam);
+        return JSON.parseObject(swapTradeAPIService.swapOrderAlgo(swapOrderParam), SwapOrderResultVO.class);
     }
 
 
