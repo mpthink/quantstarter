@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author mpthink
@@ -68,8 +69,18 @@ public class EthTradeService {
     }
 
 
-    public String cancelOrderAlgo(CancelOrderAlgo cancelOrderAlgo){
-        return null;
+    public String cancelOrderAlgo(List<String> algo_ids){
+        CancelOrderAlgo cancelOrderAlgo = CancelOrderAlgo.builder()
+                .instrument_id(eth_instrument_id)
+                .algo_ids(algo_ids)
+                .order_type(algo_order_type)
+                .build();
+        return swapTradeAPIService.cancelOrderAlgo(cancelOrderAlgo);
+    }
+
+    public String checkAlgoOrder(String algo_id){
+        String swapOrders = swapTradeAPIService.getSwapOrders(eth_instrument_id, algo_order_type, "", algo_id, "", "", "");
+        return swapOrders;
     }
 
 

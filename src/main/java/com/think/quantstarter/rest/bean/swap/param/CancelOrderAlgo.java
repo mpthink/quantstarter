@@ -1,9 +1,11 @@
 package com.think.quantstarter.rest.bean.swap.param;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
 
+@Builder
 @Data
 public class CancelOrderAlgo {
     private String instrument_id;

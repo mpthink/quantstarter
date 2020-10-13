@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 
 /**
  * @author mpthink
@@ -26,8 +27,15 @@ public class TradeTest {
     public void test(){
 
         SwapOrderResultVO order = ethTradeService.swapOrderAlgo(FuturesTransactionTypeEnum.CLOSE_SHORT,"380","387");
-
         System.out.println(order);
+        String algo_id = order.getData().getAlgo_id();
+        //check
+        String beforeCancel = ethTradeService.checkAlgoOrder(algo_id);
+        System.out.println("check before: " + beforeCancel);
+        String cancelOrderAlgo = ethTradeService.cancelOrderAlgo(Arrays.asList(algo_id));
+        System.out.println("cancel: " + cancelOrderAlgo);
+        String afterCancel = ethTradeService.checkAlgoOrder(algo_id);
+        System.out.println("check after: " + afterCancel);
 
     }
 
