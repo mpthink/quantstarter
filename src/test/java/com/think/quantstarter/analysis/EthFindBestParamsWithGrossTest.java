@@ -155,6 +155,7 @@ public class EthFindBestParamsWithGrossTest {
 
         QueryWrapper<EthCandles5m> wrapper = new QueryWrapper<>();
         wrapper.orderByAsc("candle_time");
+//        wrapper.eq("candle_time","2020-10-01T08:30:00.000Z");
         wrapper.last("limit 1");
         EthCandles5m oldest = ethCandles5mMapper.selectOne(wrapper);
         String start = oldest.getCandleTime();

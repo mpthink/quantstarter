@@ -16,7 +16,7 @@ public class SwapMarketAPIServiceImpl implements SwapMarketAPIService {
     private SwapMarketAPI api;
 
     @PostConstruct
-    private void init(){
+    private void init() {
         api = client.createService(SwapMarketAPI.class);
     }
 
@@ -38,8 +38,8 @@ public class SwapMarketAPIServiceImpl implements SwapMarketAPIService {
      * @return
      */
     @Override
-    public String getDepthApi(String instrument_id, String size,String depth) {
-        return client.executeSync(api.getDepthApi(instrument_id, size,depth));
+    public String getDepthApi(String instrument_id, String size, String depth) {
+        return client.executeSync(api.getDepthApi(instrument_id, size, depth));
     }
 
     /**
@@ -173,8 +173,8 @@ public class SwapMarketAPIServiceImpl implements SwapMarketAPIService {
      * @return
      */
     @Override
-    public String getHistoricalFundingRateApi(String instrument_id,String limit) {
-        return client.executeSync(api.getHistoricalFundingRateApi(instrument_id,limit));
+    public String getHistoricalFundingRateApi(String instrument_id, String limit) {
+        return client.executeSync(api.getHistoricalFundingRateApi(instrument_id, limit));
     }
 
     /**

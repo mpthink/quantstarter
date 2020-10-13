@@ -191,19 +191,26 @@ public class EthFindBestParamsTest {
                 boolean hour4TrendC = hour4Trend ? hour4Trend(candleNew, flag) : true;
 
                 Double buyPrice = getBuyPrice(candleNew.getCandleTime());
-                //判断是否在120分钟内多次买入
-                if (countTimeGapMinutes(candleNew.getCandleTime(), lastBuyTime) < intervalBuy) {
-                    continue;
-                } else {
-                    lastBuyTime = candleNew.getCandleTime();
-                }
+
 
                 if (flag > 0 && hour1EmaC && hour4EmaC && hour1TrendC && hour4TrendC) {
+                    //判断是否在120分钟内多次买入
+                    if (countTimeGapMinutes(candleNew.getCandleTime(), lastBuyTime) < intervalBuy) {
+                        continue;
+                    } else {
+                        lastBuyTime = candleNew.getCandleTime();
+                    }
                     //买涨
                     Double planLossPrice = getLossPrice(candleNew, buyPrice, flag, lossN, lossM);
                     sellAndRecord(candleNew.getCandleTime(), buyPrice, planLossPrice, flag, handInTime, sum);
                 }
                 if (flag < 0 && hour1EmaC && hour4EmaC && hour1TrendC && hour4TrendC) {
+                    //判断是否在120分钟内多次买入
+                    if (countTimeGapMinutes(candleNew.getCandleTime(), lastBuyTime) < intervalBuy) {
+                        continue;
+                    } else {
+                        lastBuyTime = candleNew.getCandleTime();
+                    }
                     //买跌
                     Double planLossPrice = getLossPrice(candleNew, buyPrice, flag, lossN, lossM);
                     sellAndRecord(candleNew.getCandleTime(), buyPrice, planLossPrice, flag, handInTime, sum);
