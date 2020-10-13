@@ -1,7 +1,6 @@
 package com.think.quantstarter.trade;
 
 import com.think.quantstarter.pilot.service.EthTradeService;
-import com.think.quantstarter.rest.bean.swap.result.PerOrderResult;
 import com.think.quantstarter.rest.enums.FuturesTransactionTypeEnum;
 import com.think.quantstarter.rest.service.swap.SwapUserAPIServive;
 import org.junit.jupiter.api.Test;
@@ -25,7 +24,7 @@ public class TradeTest {
     @Test
     public void test(){
 
-        PerOrderResult order = ethTradeService.order(FuturesTransactionTypeEnum.OPEN_SHORT);
+        String order = ethTradeService.swapOrderAlgo(FuturesTransactionTypeEnum.CLOSE_SHORT,"380","387");
 
         System.out.println(order);
 
