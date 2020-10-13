@@ -1,8 +1,14 @@
 package com.think.quantstarter.rest.bean.swap.param;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Builder
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class PpOrder {
     /**
      * 由您设置的订单id来唯一标识您的订单

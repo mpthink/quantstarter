@@ -2,6 +2,7 @@ package com.think.quantstarter.rest.service.swap;
 
 
 import com.think.quantstarter.rest.bean.swap.param.*;
+import com.think.quantstarter.rest.bean.swap.result.PerOrderResult;
 
 public interface SwapTradeAPIService {
     /**
@@ -9,7 +10,7 @@ public interface SwapTradeAPIService {
      * @param ppOrder
      * @return
      */
-    Object order(PpOrder ppOrder);
+    PerOrderResult order(PpOrder ppOrder);
 
     /**
      * 批量下单

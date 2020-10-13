@@ -2,13 +2,14 @@ package com.think.quantstarter.rest.service.swap.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.think.quantstarter.rest.bean.swap.param.*;
+import com.think.quantstarter.rest.bean.swap.result.PerOrderResult;
 import retrofit2.Call;
 import retrofit2.http.*;
 
 public interface SwapTradeAPI {
     //下单
     @POST("/api/swap/v3/order")
-    Call<Object> order(@Body PpOrder ppOrder);
+    Call<PerOrderResult> order(@Body PpOrder ppOrder);
     //批量下单
     @POST("/api/swap/v3/orders")
     Call<String> orders(@Body JSONObject ppOrders);

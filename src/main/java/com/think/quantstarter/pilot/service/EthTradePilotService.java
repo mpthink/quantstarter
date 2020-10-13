@@ -34,7 +34,7 @@ import java.util.*;
 @Slf4j
 public class EthTradePilotService {
 
-    private static final String instrument_id = "ETH-USD-SWAP";
+    private static final String eth_instrument_id = "ETH-USDT-SWAP";
     private static final Integer Records = 20;
     private static final Integer intervalBuy = 120;
     private static String lastBuyTime = "2020-10-09T00:40:00.000Z";
@@ -169,7 +169,7 @@ public class EthTradePilotService {
     }
 
     private void getCandles(String granularity, Class clz, IService service){
-        JSONArray candles = candlesService.getCandles(instrument_id, granularity, Records);
+        JSONArray candles = candlesService.getCandles(eth_instrument_id, granularity, Records);
         List<Object> objectList = ConvertToObjectUtil.convertJsonArrayToObjects(candles, clz);
         service.saveOrUpdateBatch(objectList);
     }

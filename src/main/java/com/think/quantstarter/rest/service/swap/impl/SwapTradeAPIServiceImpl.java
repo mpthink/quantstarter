@@ -1,6 +1,7 @@
 package com.think.quantstarter.rest.service.swap.impl;
 
 import com.think.quantstarter.rest.bean.swap.param.*;
+import com.think.quantstarter.rest.bean.swap.result.PerOrderResult;
 import com.think.quantstarter.rest.client.APIClient;
 import com.think.quantstarter.rest.service.swap.SwapTradeAPIService;
 import com.think.quantstarter.utils.JsonUtils;
@@ -30,8 +31,7 @@ public class SwapTradeAPIServiceImpl implements SwapTradeAPIService {
      * @return
      */
     @Override
-    public Object order(PpOrder ppOrder) {
-        System.out.println("下单参数：：：：：：");
+    public PerOrderResult order(PpOrder ppOrder) {
         System.out.println(JsonUtils.convertObject(ppOrder, PpOrder.class));
         return this.client.executeSync(this.api.order(ppOrder));
     }
