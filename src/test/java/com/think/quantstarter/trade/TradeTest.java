@@ -1,7 +1,9 @@
 package com.think.quantstarter.trade;
 
 import com.think.quantstarter.pilot.service.EthTradeService;
+import com.think.quantstarter.rest.bean.swap.result.CancelAlgoOrder;
 import com.think.quantstarter.rest.bean.swap.result.SwapOrderResultVO;
+import com.think.quantstarter.rest.bean.swap.result.SwapOrders;
 import com.think.quantstarter.rest.enums.FuturesTransactionTypeEnum;
 import com.think.quantstarter.rest.service.swap.SwapUserAPIServive;
 import org.junit.jupiter.api.Test;
@@ -30,11 +32,11 @@ public class TradeTest {
         System.out.println(order);
         String algo_id = order.getData().getAlgo_id();
         //check
-        String beforeCancel = ethTradeService.checkAlgoOrder(algo_id);
+        SwapOrders beforeCancel = ethTradeService.checkAlgoOrder(algo_id);
         System.out.println("check before: " + beforeCancel);
-        String cancelOrderAlgo = ethTradeService.cancelOrderAlgo(Arrays.asList(algo_id));
+        CancelAlgoOrder cancelOrderAlgo = ethTradeService.cancelOrderAlgo(Arrays.asList(algo_id));
         System.out.println("cancel: " + cancelOrderAlgo);
-        String afterCancel = ethTradeService.checkAlgoOrder(algo_id);
+        SwapOrders afterCancel = ethTradeService.checkAlgoOrder(algo_id);
         System.out.println("check after: " + afterCancel);
 
     }

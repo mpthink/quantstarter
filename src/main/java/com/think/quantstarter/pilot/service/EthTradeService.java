@@ -4,8 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.think.quantstarter.rest.bean.swap.param.CancelOrderAlgo;
 import com.think.quantstarter.rest.bean.swap.param.PpOrder;
 import com.think.quantstarter.rest.bean.swap.param.SwapOrderParam;
-import com.think.quantstarter.rest.bean.swap.result.PerOrderResult;
-import com.think.quantstarter.rest.bean.swap.result.SwapOrderResultVO;
+import com.think.quantstarter.rest.bean.swap.result.*;
 import com.think.quantstarter.rest.enums.FuturesTransactionTypeEnum;
 import com.think.quantstarter.rest.service.swap.SwapTradeAPIService;
 import lombok.extern.slf4j.Slf4j;
@@ -54,33 +53,32 @@ public class EthTradeService {
      * @return
      */
     public SwapOrderResultVO swapOrderAlgo(FuturesTransactionTypeEnum type, String tp_trigger_price, String sl_trigger_price){
-
         SwapOrderParam swapOrderParam = SwapOrderParam.builder()
                 .instrument_id(eth_instrument_id)
                 .type(String.valueOf(type.code()))
                 .order_type(algo_order_type)
                 .size(order_size)
                 .tp_trigger_price(tp_trigger_price)
-                .tp_trigger_type("2") //1:限价 2:市场价；止盈触发价格类型，默认是限价；为市场价时，委托价格不必填；
+                .tp_trigger_type(trigger_type) //1:限价 2:市场价；止盈触发价格类型，默认是限价；为市场价时，委托价格不必填；
                 .sl_trigger_price(sl_trigger_price)
-                .sl_trigger_type("2")
+                .sl_trigger_type(trigger_type)
                 .build();
         return JSON.parseObject(swapTradeAPIService.swapOrderAlgo(swapOrderParam), SwapOrderResultVO.class);
     }
 
-
-    public String cancelOrderAlgo(List<String> algo_ids){
+    public CancelAlgoOrder cancelOrderAlgo(List<String> algo_ids){
         CancelOrderAlgo cancelOrderAlgo = CancelOrderAlgo.builder()
                 .instrument_id(eth_instrument_id)
                 .algo_ids(algo_ids)
                 .order_type(algo_order_type)
                 .build();
-        return swapTradeAPIService.cancelOrderAlgo(cancelOrderAlgo);
+        String orderAlgo = swapTradeAPIService.cancelOrderAlgo(cancelOrderAlgo);
+        return JSON.parseObject(orderAlgo, CancelAlgoOrderVO.class).getData();
     }
 
-    public String checkAlgoOrder(String algo_id){
+    public SwapOrders checkAlgoOrder(String algo_id){
         String swapOrders = swapTradeAPIService.getSwapOrders(eth_instrument_id, algo_order_type, "", algo_id, "", "", "");
-        return swapOrders;
+        return JSON.parseObject(swapOrders, SwapOrdersVO.class).getOrderStrategyVOS().get(0);
     }
 
 

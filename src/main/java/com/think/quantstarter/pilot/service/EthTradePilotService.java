@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -37,6 +38,7 @@ public class EthTradePilotService {
     private static final String eth_instrument_id = "ETH-USDT-SWAP";
     private static final Integer Records = 20;
     private static final Integer intervalBuy = 120;
+    private static final Integer holdTime = 180;
     private static String lastBuyTime = "2020-10-09T00:40:00.000Z";
 
     private static int stopTimes = 0;
@@ -107,8 +109,6 @@ public class EthTradePilotService {
                     }
                 }
             }
-
-
         }catch (APIException e){
             log.error("Get candles has error, {}" ,e.getMessage());
             throw new APIException("Get candles has error");
@@ -148,6 +148,9 @@ public class EthTradePilotService {
     private boolean checkCandle5mTime(EthCandles5m candles5mNew) {
         String candleTimeString = candles5mNew.getCandleTime();
         Date candleTime = DateUtils.parseUTCTime(candleTimeString);
+        Date timeNow = new Date();
+        Duration.between(candleTime.toInstant(), timeNow.toInstant()).toMinutes();
+
         ZoneId zoneId = ZoneId.systemDefault();
         LocalDateTime localDateTime = candleTime.toInstant().atZone(zoneId).toLocalDateTime();
         LocalDateTime temp1 = localDateTime.plusMinutes(5);

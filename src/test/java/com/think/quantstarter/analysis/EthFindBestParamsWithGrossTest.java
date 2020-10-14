@@ -87,7 +87,7 @@ public class EthFindBestParamsWithGrossTest {
                 .lossN(2).lossM(60)
                 .hour1Ema(true).hour4Ema(true)
                 .hour1Trend(false).hour4Trend(false)
-                .handInTime(185).intervalBuy(120).build();
+                .handInTime(180).intervalBuy(120).build();
         countStrategy(selectConditions);
     }
 
