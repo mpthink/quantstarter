@@ -23,6 +23,14 @@ public class TradeTest {
     @Resource
     private EthTradeService ethTradeService;
 
+
+    @Test
+    public void test2(){
+        String algo_id = "609902340460941312";
+        String dealDetail = ethTradeService.getDealDetail(algo_id);
+        System.out.println(dealDetail);
+    }
+
     @Test
     public void test(){
         //下单

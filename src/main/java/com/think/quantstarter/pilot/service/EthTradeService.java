@@ -89,4 +89,9 @@ public class EthTradeService {
         return JSON.parseObject(info, OrderInfo.class);
     }
 
+    public String getDealDetail(String order_id){
+        String dealDetail = swapUserAPIServive.selectDealDetail(eth_instrument_id, order_id, "", "", "");
+        return dealDetail;
+    }
+
 }
