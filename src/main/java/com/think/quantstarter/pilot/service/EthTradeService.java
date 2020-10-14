@@ -7,6 +7,7 @@ import com.think.quantstarter.rest.bean.swap.param.SwapOrderParam;
 import com.think.quantstarter.rest.bean.swap.result.*;
 import com.think.quantstarter.rest.enums.FuturesTransactionTypeEnum;
 import com.think.quantstarter.rest.service.swap.SwapTradeAPIService;
+import com.think.quantstarter.rest.service.swap.SwapUserAPIServive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,8 @@ public class EthTradeService {
 
     @Resource
     private SwapTradeAPIService swapTradeAPIService;
+    @Resource
+    private SwapUserAPIServive swapUserAPIServive;
 
     /**
      * 所有单据都市价成交
@@ -81,5 +84,9 @@ public class EthTradeService {
         return JSON.parseObject(swapOrders, SwapOrdersVO.class).getOrderStrategyVOS().get(0);
     }
 
+    public OrderInfo getOrderInfo(String order_id){
+        String info = swapUserAPIServive.selectOrderByOrderId(eth_instrument_id, order_id);
+        return JSON.parseObject(info, OrderInfo.class);
+    }
 
 }
