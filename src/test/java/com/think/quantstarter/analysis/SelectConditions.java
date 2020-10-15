@@ -16,6 +16,8 @@ public class SelectConditions {
     boolean hour4Ema;
     boolean hour1Trend;
     boolean hour4Trend;
+    int maxStopTimes;
     int handInTime;
     int intervalBuy;
+    int gainAVG;
 }

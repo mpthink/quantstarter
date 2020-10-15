@@ -1,6 +1,7 @@
-package com.think.quantstarter.analysis;
+package com.think.quantstarter.doubt;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.think.quantstarter.analysis.SelectConditions;
 import com.think.quantstarter.analysis.utils.CandleUtil;
 import com.think.quantstarter.dataCollect.entity.EthCandles1h;
 import com.think.quantstarter.dataCollect.entity.EthCandles4h;
@@ -29,7 +30,7 @@ import java.util.concurrent.TimeUnit;
  */
 @SpringBootTest
 @Slf4j
-public class EthFindBestParamsWithGrossTest {
+public class EthFindBestParamsTest {
 
     @Resource
     private EthCandles5mMapper ethCandles5mMapper;
@@ -40,15 +41,18 @@ public class EthFindBestParamsWithGrossTest {
 
     //需要随机的参数，以数组存放，用一个map来存储参数组合和
     //计划损失N的倍数
-    private static Double[] lossNArray = new Double[]{0.5, 1.0, 1.5, 2.0, 2.5, 3.0};
+    private static Double[] lossNArray = new Double[]{1.0, 2.0, 3.0, 4.0, 5.0};
     //最大损失取过去多少分钟的
-    private static Integer[] lossMArray = new Integer[]{30, 40, 60, 80, 90, 120};
+    private static Integer[] lossMArray = new Integer[]{60, 90, 120};
     //最长持有多久
-    private static Integer[] handMArray = new Integer[]{35, 65, 95, 125, 155, 185, 215, 245};
+    private static Integer[] handMArray = new Integer[]{65, 125, 185, 245};
     //条件判断随机
     private static Boolean[] booleanArray = new Boolean[]{true, false};
-    //多长时间内不买第二单
-    private static Integer[] intervalArray = new Integer[]{0, 30, 60};
+    //震荡时间间隔，此处不考虑是否下单，仅考虑震荡时长，在频繁震荡中购买次数会很少
+    private static Integer[] intervalArray = new Integer[]{60, 120, 180, 240};
+    private static Integer[] maxStopTimes = new Integer[]{4, 5, 6, 7, 8};
+    //盈利倍数，当前振幅的N倍
+    private static Integer[] gainLossAVG = new Integer[]{4, 5, 6, 8, 10};
 
     //存储条件和结果
     private static Map<SelectConditions, Double> resultMap = new HashMap<>();
@@ -57,7 +61,7 @@ public class EthFindBestParamsWithGrossTest {
     private static int lossTimes = 0;
 
     private static int stopTimes = 0;
-
+    private final static int defaultStopTimes = 2;
     private static double lossAVG = 0;
 
     @Test
@@ -67,14 +71,15 @@ public class EthFindBestParamsWithGrossTest {
             int lossM = (int) getRanInArr(lossMArray);
             boolean hour1Ema = (boolean) getRanInArr(booleanArray);
             boolean hour4Ema = (boolean) getRanInArr(booleanArray);
-            boolean hour1Trend = (boolean) getRanInArr(booleanArray);
-            boolean hour4Trend = (boolean) getRanInArr(booleanArray);
             int handInTime = (int) getRanInArr(handMArray);
             int intervalBuy = (int) getRanInArr(intervalArray);
+            int maxStop = (int) getRanInArr(maxStopTimes);
+            int gainAVG = (int) getRanInArr(gainLossAVG);
             SelectConditions selectConditions = SelectConditions.builder()
                     .lossN(lossN).lossM(lossM)
                     .hour1Ema(hour1Ema).hour4Ema(hour4Ema)
-                    .hour1Trend(hour1Trend).hour4Trend(hour4Trend)
+                    .maxStopTimes(maxStop)
+                    .gainAVG(gainAVG)
                     .handInTime(handInTime).intervalBuy(intervalBuy).build();
             resultMap.put(selectConditions, 0.0);
             System.out.println(resultMap.size());
@@ -84,9 +89,10 @@ public class EthFindBestParamsWithGrossTest {
     @Test
     public void testOne() {
         SelectConditions selectConditions = SelectConditions.builder()
-                .lossN(8).lossM(180)
+                .lossN(2).lossM(60)
                 .hour1Ema(true).hour4Ema(true)
-                .hour1Trend(false).hour4Trend(false)
+                .maxStopTimes(6)
+                .gainAVG(6)
                 .handInTime(180).intervalBuy(120).build();
         countStrategy(selectConditions);
     }
@@ -98,20 +104,21 @@ public class EthFindBestParamsWithGrossTest {
         int cores = Runtime.getRuntime().availableProcessors();
         ExecutorService executorService = new ThreadPoolExecutor(cores, cores, 30, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
         //countStrategy(1.0, 40, true, true, false, false,125,0);
-        int expectedSize = 36853;
+        int expectedSize = 24000;
         while (true) {
             double lossN = (double) getRanInArr(lossNArray);
             int lossM = (int) getRanInArr(lossMArray);
             boolean hour1Ema = (boolean) getRanInArr(booleanArray);
             boolean hour4Ema = (boolean) getRanInArr(booleanArray);
-            boolean hour1Trend = (boolean) getRanInArr(booleanArray);
-            boolean hour4Trend = (boolean) getRanInArr(booleanArray);
+            int maxStop = (int) getRanInArr(maxStopTimes);
             int handInTime = (int) getRanInArr(handMArray);
             int intervalBuy = (int) getRanInArr(intervalArray);
+            int gainAVG = (int) getRanInArr(gainLossAVG);
             SelectConditions selectConditions = SelectConditions.builder()
                     .lossN(lossN).lossM(lossM)
                     .hour1Ema(hour1Ema).hour4Ema(hour4Ema)
-                    .hour1Trend(hour1Trend).hour4Trend(hour4Trend)
+                    .maxStopTimes(maxStop)
+                    .gainAVG(gainAVG)
                     .handInTime(handInTime).intervalBuy(intervalBuy).build();
             resultMap.put(selectConditions, 0.0);
             if (resultMap.size() >= expectedSize) {
@@ -148,14 +155,14 @@ public class EthFindBestParamsWithGrossTest {
         int lossM = condition.getLossM();
         boolean hour1Ema = condition.isHour1Ema();
         boolean hour4Ema = condition.isHour4Ema();
-        boolean hour1Trend = condition.isHour1Trend();
-        boolean hour4Trend = condition.isHour4Trend();
+        int maxStop = condition.getMaxStopTimes();
+        int gainAVG = condition.getGainAVG();
         int handInTime = condition.getHandInTime();
         int intervalBuy = condition.getIntervalBuy();
 
         QueryWrapper<EthCandles5m> wrapper = new QueryWrapper<>();
         wrapper.orderByAsc("candle_time");
-        wrapper.eq("candle_time","2020-09-15T08:30:00.000Z");
+//        wrapper.eq("candle_time","2020-09-08T08:00:00.000Z");
         wrapper.last("limit 1");
         EthCandles5m oldest = ethCandles5mMapper.selectOne(wrapper);
         String start = oldest.getCandleTime();
@@ -178,7 +185,7 @@ public class EthFindBestParamsWithGrossTest {
             List<EthCandles5m> ethCandles5ms = ethCandles5mMapper.selectList(wrapper);
             if (ethCandles5ms.size() != 2) {
                 //System.out.println("No enough data for analysis!");
-                log.info("Finish............" + condition + ",sum: " + sum.stream().mapToDouble(Double::doubleValue).sum()+","+sum.size()+","+gainTimes+","+lossTimes);
+                log.info("Finish............" + condition + ",sum: " + sum.stream().mapToDouble(Double::doubleValue).sum() + "," + sum.size() + "," + gainTimes + "," + lossTimes);
                 //准备写入map中
                 resultMap.put(condition, sum.stream().mapToDouble(Double::doubleValue).sum());
                 return;
@@ -192,8 +199,6 @@ public class EthFindBestParamsWithGrossTest {
                 double flag = minuteEma5 - minuteEma10;
                 boolean hour1EmaC = hour1Ema ? hourEmaCheck(candleNew, flag) : true;
                 boolean hour4EmaC = hour4Ema ? hour4EmaCheck(candleNew, flag) : true;
-                boolean hour1TrendC = hour1Trend ? hourTrend(candleNew, flag) : true;
-                boolean hour4TrendC = hour4Trend ? hour4Trend(candleNew, flag) : true;
 
                 Double buyPrice = getBuyPrice(candleNew.getCandleTime());
                 //判断是否在120分钟内多次买入
@@ -203,35 +208,35 @@ public class EthFindBestParamsWithGrossTest {
                     lastBuyTime = candleNew.getCandleTime();
                 }
 
-                if (flag > 0 && hour1EmaC && hour4EmaC && hour1TrendC && hour4TrendC) {
+                if (flag > 0 && hour1EmaC && hour4EmaC) {
                     //买涨
-                    if(stopTimes >= 2){
+                    if (stopTimes >= defaultStopTimes) {
                         stopTimes++;
-                        if(stopTimes == 6){
-                            stopTimes=0;
+                        if (stopTimes == maxStop) {
+                            stopTimes = 0;
                         }
                         continue;
                     }
                     Double planLossPrice = getLossPrice(candleNew, buyPrice, flag, lossN, lossM);
-                    sellAndRecord(candleNew.getCandleTime(), buyPrice, planLossPrice, flag, handInTime, sum);
+                    sellAndRecord(candleNew.getCandleTime(), buyPrice, planLossPrice, flag, handInTime, gainAVG, sum);
                 }
-                if (flag < 0 && hour1EmaC && hour4EmaC && hour1TrendC && hour4TrendC) {
+                if (flag < 0 && hour1EmaC && hour4EmaC) {
                     //买跌
-                    if(stopTimes >= 2){
+                    if (stopTimes >= defaultStopTimes) {
                         stopTimes++;
-                        if(stopTimes == 6){
-                            stopTimes=0;
+                        if (stopTimes == maxStop) {
+                            stopTimes = 0;
                         }
                         continue;
                     }
                     Double planLossPrice = getLossPrice(candleNew, buyPrice, flag, lossN, lossM);
-                    sellAndRecord(candleNew.getCandleTime(), buyPrice, planLossPrice, flag, handInTime, sum);
+                    sellAndRecord(candleNew.getCandleTime(), buyPrice, planLossPrice, flag, handInTime, gainAVG, sum);
                 }
             }
         }
     }
 
-    private void sellAndRecord(String time, double buyPrice, double planLossPrice, double flag, int handInTime,
+    private void sellAndRecord(String time, double buyPrice, double planLossPrice, double flag, int handInTime, int gainAVG,
                                List<Double> sum) {
         //由于1分钟数据有限，不能获取当前1分钟的价格，按照接下来5分钟的走势，按1个小时定时止损来看看是否会止损或者退出
         String tempStart = DateUtils.addMinutes(time, 5);
@@ -247,15 +252,15 @@ public class EthFindBestParamsWithGrossTest {
                 if (candles5m.getLow() <= planLossPrice) {
                     double loss = planLossPrice - buyPrice;
                     sum.add(loss / buyPrice * 1000);
-                    log.info("做多止损," + time + "," + buyPrice + "," + planLossPrice + "," + loss + "," + loss / buyPrice * 1000);
+                    //log.info("做多止损," + time + "," + buyPrice + "," + planLossPrice + "," + loss + "," + loss / buyPrice * 1000);
                     lossTimes++;
                     stopTimes++;
                     sellflag = false;
                     break;
                 }
-                if((candles5m.getHigh()-buyPrice)>=6*lossAVG){
-                    sum.add((candles5m.getHigh()-buyPrice) / buyPrice * 1000);
-                    log.info("做多止盈," + time + "," + buyPrice + "," + planLossPrice + "," + (candles5m.getHigh()-buyPrice) + "," + (candles5m.getHigh()-buyPrice) / buyPrice * 1000);
+                if ((candles5m.getHigh() - buyPrice) >= gainAVG * lossAVG) {
+                    sum.add((candles5m.getHigh() - buyPrice) / buyPrice * 1000);
+                    //log.info("做多止盈," + time + "," + buyPrice + "," + planLossPrice + "," + (candles5m.getHigh()-buyPrice) + "," + (candles5m.getHigh()-buyPrice) / buyPrice * 1000);
                     gainTimes++;
                     sellflag = false;
                     break;
@@ -264,29 +269,29 @@ public class EthFindBestParamsWithGrossTest {
             if (sellflag) {
                 Double lastClose = tempList.get(tempList.size() - 1).getClose();
                 double loss = lastClose - buyPrice;
-                if(loss>=0){
+                if (loss >= 0) {
                     gainTimes++;
-                }else{
+                } else {
                     lossTimes++;
                     stopTimes++;
                 }
                 sum.add(loss / buyPrice * 1000);
-                log.info("做多按时," + time + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
+                //log.info("做多按时," + time + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
             }
         } else {
             for (EthCandles5m candles5m : tempList) {
                 if (candles5m.getHigh() >= planLossPrice) {
                     double loss = buyPrice - planLossPrice;
                     sum.add(loss / buyPrice * 1000);
-                    log.info("做空止损," + time + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - planLossPrice) + "," + (buyPrice - planLossPrice) / buyPrice * 1000);
+                    //log.info("做空止损," + time + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - planLossPrice) + "," + (buyPrice - planLossPrice) / buyPrice * 1000);
                     lossTimes++;
                     stopTimes++;
                     sellflag = false;
                     break;
                 }
-                if((buyPrice - candles5m.getLow())>=6*lossAVG){
+                if ((buyPrice - candles5m.getLow()) >= gainAVG * lossAVG) {
                     sum.add((buyPrice - candles5m.getLow()) / buyPrice * 1000);
-                    log.info("做空止盈," + time + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - candles5m.getLow()) + "," + (buyPrice - candles5m.getLow()) / buyPrice * 1000);
+                    //log.info("做空止盈," + time + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - candles5m.getLow()) + "," + (buyPrice - candles5m.getLow()) / buyPrice * 1000);
                     gainTimes++;
                     sellflag = false;
                     break;
@@ -295,14 +300,14 @@ public class EthFindBestParamsWithGrossTest {
             if (sellflag) {
                 Double lastClose = tempList.get(tempList.size() - 1).getClose();
                 double loss = buyPrice - lastClose;
-                if(loss>=0){
+                if (loss >= 0) {
                     gainTimes++;
-                }else{
+                } else {
                     lossTimes++;
                     stopTimes++;
                 }
                 sum.add(loss / buyPrice * 1000);
-                log.info("做空按时," + time + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
+                //log.info("做空按时," + time + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
             }
         }
     }
