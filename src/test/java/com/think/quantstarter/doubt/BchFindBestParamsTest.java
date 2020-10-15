@@ -104,7 +104,7 @@ public class BchFindBestParamsTest {
         int cores = Runtime.getRuntime().availableProcessors();
         ExecutorService executorService = new ThreadPoolExecutor(cores, cores, 30, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
         //countStrategy(1.0, 40, true, true, false, false,125,0);
-        int expectedSize = 4800;
+        int expectedSize = 24000;
         while (true) {
             double lossN = (double) getRanInArr(lossNArray);
             int lossM = (int) getRanInArr(lossMArray);
