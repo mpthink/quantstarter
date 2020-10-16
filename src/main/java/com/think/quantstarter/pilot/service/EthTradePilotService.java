@@ -15,8 +15,6 @@ import com.think.quantstarter.rest.exception.APIException;
 import com.think.quantstarter.utils.DateUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.retry.annotation.Retryable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -57,8 +55,8 @@ public class EthTradePilotService {
     @Resource
     private EthEmaGenerator ethEmaGenerator;
 
-    @Scheduled(cron = "1 0/5 * * * ?")
-    @Retryable(include = {APIException.class}, maxAttempts = 3)
+    //@Scheduled(cron = "1 0/5 * * * ?")
+    //@Retryable(include = {APIException.class}, maxAttempts = 3)
     public void openOrder(){
         try{
             //获取最新的candle数据

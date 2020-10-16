@@ -86,11 +86,11 @@ public class BtcFindBestParamsTest {
     @Test
     public void testOne() {
         SelectConditions selectConditions = SelectConditions.builder()
-                .lossN(2).lossM(60)
-                .hour1Ema(false).hour4Ema(false)
-                .maxStopTimes(7)
+                .lossN(2).lossM(120)
+                .hour1Ema(false).hour4Ema(true)
+                .maxStopTimes(4)
                 .gainAVG(4)
-                .handInTime(245).intervalBuy(120).build();
+                .handInTime(245).intervalBuy(60).build();
         countStrategy(selectConditions);
     }
 
@@ -152,7 +152,7 @@ public class BtcFindBestParamsTest {
         int gainTimes = 0;
         int lossTimes = 0;
         int stopTimes = 0;
-        double lossAVG = 0;
+        double lossAVG;
 
         double lossN = condition.getLossN();
         int lossM = condition.getLossM();
@@ -238,7 +238,7 @@ public class BtcFindBestParamsTest {
                             if (candles5m.getLow() <= planLossPrice) {
                                 double loss = planLossPrice - buyPrice;
                                 sum.add(loss / buyPrice * 1000);
-                                //log.info("做多止损," + time + "," + buyPrice + "," + planLossPrice + "," + loss + "," + loss / buyPrice * 1000);
+                                //log.info("做多止损," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + loss + "," + loss / buyPrice * 1000);
                                 lossTimes++;
                                 stopTimes++;
                                 sellflag = false;
@@ -246,7 +246,7 @@ public class BtcFindBestParamsTest {
                             }
                             if ((candles5m.getHigh() - buyPrice) >= gainAVG * lossAVG) {
                                 sum.add((candles5m.getHigh() - buyPrice) / buyPrice * 1000);
-                                //log.info("做多止盈," + time + "," + buyPrice + "," + planLossPrice + "," + (candles5m.getHigh()-buyPrice) + "," + (candles5m.getHigh()-buyPrice) / buyPrice * 1000);
+                                //log.info("做多止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (candles5m.getHigh()-buyPrice) + "," + (candles5m.getHigh()-buyPrice) / buyPrice * 1000);
                                 gainTimes++;
                                 sellflag = false;
                                 break;
@@ -262,14 +262,14 @@ public class BtcFindBestParamsTest {
                                 stopTimes++;
                             }
                             sum.add(loss / buyPrice * 1000);
-                            //log.info("做多按时," + time + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
+                            //log.info("做多按时," + candleNew.getCandleTime() + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
                         }
                     } else {
                         for (BtcCandles5m candles5m : tempList) {
                             if (candles5m.getHigh() >= planLossPrice) {
                                 double loss = buyPrice - planLossPrice;
                                 sum.add(loss / buyPrice * 1000);
-                                //log.info("做空止损," + time + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - planLossPrice) + "," + (buyPrice - planLossPrice) / buyPrice * 1000);
+                                //log.info("做空止损," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - planLossPrice) + "," + (buyPrice - planLossPrice) / buyPrice * 1000);
                                 lossTimes++;
                                 stopTimes++;
                                 sellflag = false;
@@ -277,7 +277,7 @@ public class BtcFindBestParamsTest {
                             }
                             if ((buyPrice - candles5m.getLow()) >= gainAVG * lossAVG) {
                                 sum.add((buyPrice - candles5m.getLow()) / buyPrice * 1000);
-                                //log.info("做空止盈," + time + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - candles5m.getLow()) + "," + (buyPrice - candles5m.getLow()) / buyPrice * 1000);
+                                //log.info("做空止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - candles5m.getLow()) + "," + (buyPrice - candles5m.getLow()) / buyPrice * 1000);
                                 gainTimes++;
                                 sellflag = false;
                                 break;
@@ -293,7 +293,7 @@ public class BtcFindBestParamsTest {
                                 stopTimes++;
                             }
                             sum.add(loss / buyPrice * 1000);
-                            //log.info("做空按时," + time + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
+                            //log.info("做空按时," + candleNew.getCandleTime() + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
                         }
                     }
                     //end
@@ -324,7 +324,7 @@ public class BtcFindBestParamsTest {
                             if (candles5m.getLow() <= planLossPrice) {
                                 double loss = planLossPrice - buyPrice;
                                 sum.add(loss / buyPrice * 1000);
-                                //log.info("做多止损," + time + "," + buyPrice + "," + planLossPrice + "," + loss + "," + loss / buyPrice * 1000);
+                                //log.info("做多止损," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + loss + "," + loss / buyPrice * 1000);
                                 lossTimes++;
                                 stopTimes++;
                                 sellflag = false;
@@ -332,7 +332,7 @@ public class BtcFindBestParamsTest {
                             }
                             if ((candles5m.getHigh() - buyPrice) >= gainAVG * lossAVG) {
                                 sum.add((candles5m.getHigh() - buyPrice) / buyPrice * 1000);
-                                //log.info("做多止盈," + time + "," + buyPrice + "," + planLossPrice + "," + (candles5m.getHigh()-buyPrice) + "," + (candles5m.getHigh()-buyPrice) / buyPrice * 1000);
+                                //log.info("做多止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (candles5m.getHigh()-buyPrice) + "," + (candles5m.getHigh()-buyPrice) / buyPrice * 1000);
                                 gainTimes++;
                                 sellflag = false;
                                 break;
@@ -348,14 +348,14 @@ public class BtcFindBestParamsTest {
                                 stopTimes++;
                             }
                             sum.add(loss / buyPrice * 1000);
-                            //log.info("做多按时," + time + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
+                            //log.info("做多按时," + candleNew.getCandleTime() + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
                         }
                     } else {
                         for (BtcCandles5m candles5m : tempList) {
                             if (candles5m.getHigh() >= planLossPrice) {
                                 double loss = buyPrice - planLossPrice;
                                 sum.add(loss / buyPrice * 1000);
-                                //log.info("做空止损," + time + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - planLossPrice) + "," + (buyPrice - planLossPrice) / buyPrice * 1000);
+                                //log.info("做空止损," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - planLossPrice) + "," + (buyPrice - planLossPrice) / buyPrice * 1000);
                                 lossTimes++;
                                 stopTimes++;
                                 sellflag = false;
@@ -363,7 +363,7 @@ public class BtcFindBestParamsTest {
                             }
                             if ((buyPrice - candles5m.getLow()) >= gainAVG * lossAVG) {
                                 sum.add((buyPrice - candles5m.getLow()) / buyPrice * 1000);
-                                //log.info("做空止盈," + time + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - candles5m.getLow()) + "," + (buyPrice - candles5m.getLow()) / buyPrice * 1000);
+                                //log.info("做空止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - candles5m.getLow()) + "," + (buyPrice - candles5m.getLow()) / buyPrice * 1000);
                                 gainTimes++;
                                 sellflag = false;
                                 break;
@@ -379,7 +379,7 @@ public class BtcFindBestParamsTest {
                                 stopTimes++;
                             }
                             sum.add(loss / buyPrice * 1000);
-                            //log.info("做空按时," + time + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
+                            //log.info("做空按时," + candleNew.getCandleTime() + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
                         }
                     }
                     //end
