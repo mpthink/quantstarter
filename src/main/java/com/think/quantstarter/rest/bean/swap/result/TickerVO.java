@@ -1,9 +1,12 @@
 package com.think.quantstarter.rest.bean.swap.result;
 
+import lombok.Data;
+
 /**
  * @author mpthink
  * @date 2020/10/14 9:51
  */
+@Data
 public class TickerVO {
     private String instrument_id;
     private String timestamp;

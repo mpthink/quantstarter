@@ -3,12 +3,12 @@ package com.think.quantstarter.doubt;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.think.quantstarter.analysis.SelectConditions;
 import com.think.quantstarter.analysis.utils.CandleUtil;
-import com.think.quantstarter.dataCollect.entity.EthCandles1h;
-import com.think.quantstarter.dataCollect.entity.EthCandles4h;
-import com.think.quantstarter.dataCollect.entity.EthCandles5m;
-import com.think.quantstarter.dataCollect.mapper.EthCandles1hMapper;
-import com.think.quantstarter.dataCollect.mapper.EthCandles4hMapper;
-import com.think.quantstarter.dataCollect.mapper.EthCandles5mMapper;
+import com.think.quantstarter.dataCollect.entity.BtcCandles15m;
+import com.think.quantstarter.dataCollect.entity.BtcCandles1h;
+import com.think.quantstarter.dataCollect.entity.BtcCandles4h;
+import com.think.quantstarter.dataCollect.mapper.BtcCandles15mMapper;
+import com.think.quantstarter.dataCollect.mapper.BtcCandles1hMapper;
+import com.think.quantstarter.dataCollect.mapper.BtcCandles4hMapper;
 import com.think.quantstarter.utils.DateUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -30,14 +30,14 @@ import java.util.concurrent.TimeUnit;
  */
 @SpringBootTest
 @Slf4j
-public class EthFindBestParamsTest {
+public class BtcFindBestParams15mTest {
 
     @Resource
-    private EthCandles5mMapper ethCandles5mMapper;
+    private BtcCandles15mMapper btcCandles15mMapper;
     @Resource
-    private EthCandles1hMapper ethCandles1hMapper;
+    private BtcCandles1hMapper btcCandles1hMapper;
     @Resource
-    private EthCandles4hMapper ethCandles4hMapper;
+    private BtcCandles4hMapper btcCandles4hMapper;
 
     //需要随机的参数，以数组存放，用一个map来存储参数组合和
     //计划损失N的倍数
@@ -88,9 +88,9 @@ public class EthFindBestParamsTest {
         SelectConditions selectConditions = SelectConditions.builder()
                 .lossN(2).lossM(60)
                 .hour1Ema(true).hour4Ema(true)
-                .maxStopTimes(6)
-                .gainAVG(6)
-                .handInTime(185).intervalBuy(120).build();
+                .maxStopTimes(8)
+                .gainAVG(8)
+                .handInTime(245).intervalBuy(240).build();
         countStrategy(selectConditions);
     }
 
@@ -152,7 +152,7 @@ public class EthFindBestParamsTest {
         int gainTimes = 0;
         int lossTimes = 0;
         int stopTimes = 0;
-        double lossAVG = 0;
+        double lossAVG;
 
         double lossN = condition.getLossN();
         int lossM = condition.getLossM();
@@ -163,18 +163,18 @@ public class EthFindBestParamsTest {
         int handInTime = condition.getHandInTime();
         int intervalBuy = condition.getIntervalBuy();
 
-        QueryWrapper<EthCandles5m> wrapper = new QueryWrapper<>();
+        QueryWrapper<BtcCandles15m> wrapper = new QueryWrapper<>();
         wrapper.orderByAsc("candle_time");
-        wrapper.eq("candle_time","2020-09-19T08:00:00.000Z");
+        wrapper.eq("candle_time","2020-09-08T08:00:00.000Z");
         wrapper.last("limit 1");
-        EthCandles5m oldest = ethCandles5mMapper.selectOne(wrapper);
+        BtcCandles15m oldest = btcCandles15mMapper.selectOne(wrapper);
         String start = oldest.getCandleTime();
         String end = start;
         String lastBuyTime = start;
         int i = 0;
         final List<Double> sum = new ArrayList<>();
         while (DateUtils.parseUTCTime(end).before(new Date())) {
-            end = DateUtils.addMinutes(start, 5);
+            end = DateUtils.addMinutes(start, 15);
             wrapper = new QueryWrapper<>();
             wrapper.ge("candle_time", start);
             wrapper.le("candle_time", end);
@@ -185,17 +185,17 @@ public class EthFindBestParamsTest {
                 i++;
                 continue;
             }
-            List<EthCandles5m> ethCandles5ms = ethCandles5mMapper.selectList(wrapper);
-            if (ethCandles5ms.size() != 2) {
+            List<BtcCandles15m> btcCandles15ms = btcCandles15mMapper.selectList(wrapper);
+            if (btcCandles15ms.size() != 2) {
                 //System.out.println("No enough data for analysis!");
                 log.info("Finish............" + condition + ",sum: " + sum.stream().mapToDouble(Double::doubleValue).sum() + "," + sum.size() + "," + gainTimes + "," + lossTimes);
                 //准备写入map中
                 resultMap.put(condition, sum.stream().mapToDouble(Double::doubleValue).sum());
                 return;
             }
-            EthCandles5m candleOld = ethCandles5ms.get(0);
-            EthCandles5m candleNew = ethCandles5ms.get(1);
-            //判断前一个5m的ema5-ema10和当前ema5-ema10值是否相反
+            BtcCandles15m candleOld = btcCandles15ms.get(0);
+            BtcCandles15m candleNew = btcCandles15ms.get(1);
+            //判断前一个15m的ema5-ema10和当前ema5-ema10值是否相反
             if (isDifferentLabel(candleOld, candleNew)) {
                 Double minuteEma5 = candleNew.getEma5();
                 Double minuteEma10 = candleNew.getEma10();
@@ -227,15 +227,15 @@ public class EthFindBestParamsTest {
                     //begin
                     String tempStart = DateUtils.addMinutes(candleNew.getCandleTime(), 5);
                     String tempEnd = DateUtils.addMinutes(candleNew.getCandleTime(), handInTime);
-                    QueryWrapper<EthCandles5m> queryWrapper = new QueryWrapper<>();
+                    QueryWrapper<BtcCandles15m> queryWrapper = new QueryWrapper<>();
                     queryWrapper.ge("candle_time", tempStart);
                     queryWrapper.le("candle_time", tempEnd);
                     queryWrapper.orderByAsc("candle_time");
-                    List<EthCandles5m> tempList = ethCandles5mMapper.selectList(queryWrapper);
+                    List<BtcCandles15m> tempList = btcCandles15mMapper.selectList(queryWrapper);
                     boolean sellflag = true;
                     if (flag > 0) {
-                        for (EthCandles5m candles5m : tempList) {
-                            if (candles5m.getLow() <= planLossPrice) {
+                        for (BtcCandles15m candles15m : tempList) {
+                            if (candles15m.getLow() <= planLossPrice) {
                                 double loss = planLossPrice - buyPrice;
                                 sum.add(loss / buyPrice * 1000);
                                 log.info("做多止损," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + loss + "," + loss / buyPrice * 1000);
@@ -244,9 +244,9 @@ public class EthFindBestParamsTest {
                                 sellflag = false;
                                 break;
                             }
-                            if ((candles5m.getHigh() - buyPrice) >= gainAVG * lossAVG) {
-                                sum.add((candles5m.getHigh() - buyPrice) / buyPrice * 1000);
-                                log.info("做多止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (candles5m.getHigh()-buyPrice) + "," + (candles5m.getHigh()-buyPrice) / buyPrice * 1000);
+                            if ((candles15m.getHigh() - buyPrice) >= gainAVG * lossAVG) {
+                                sum.add((candles15m.getHigh() - buyPrice) / buyPrice * 1000);
+                                log.info("做多止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (candles15m.getHigh()-buyPrice) + "," + (candles15m.getHigh()-buyPrice) / buyPrice * 1000);
                                 gainTimes++;
                                 sellflag = false;
                                 break;
@@ -265,8 +265,8 @@ public class EthFindBestParamsTest {
                             log.info("做多按时," + candleNew.getCandleTime() + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
                         }
                     } else {
-                        for (EthCandles5m candles5m : tempList) {
-                            if (candles5m.getHigh() >= planLossPrice) {
+                        for (BtcCandles15m candles15m : tempList) {
+                            if (candles15m.getHigh() >= planLossPrice) {
                                 double loss = buyPrice - planLossPrice;
                                 sum.add(loss / buyPrice * 1000);
                                 log.info("做空止损," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - planLossPrice) + "," + (buyPrice - planLossPrice) / buyPrice * 1000);
@@ -275,9 +275,9 @@ public class EthFindBestParamsTest {
                                 sellflag = false;
                                 break;
                             }
-                            if ((buyPrice - candles5m.getLow()) >= gainAVG * lossAVG) {
-                                sum.add((buyPrice - candles5m.getLow()) / buyPrice * 1000);
-                                log.info("做空止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - candles5m.getLow()) + "," + (buyPrice - candles5m.getLow()) / buyPrice * 1000);
+                            if ((buyPrice - candles15m.getLow()) >= gainAVG * lossAVG) {
+                                sum.add((buyPrice - candles15m.getLow()) / buyPrice * 1000);
+                                log.info("做空止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - candles15m.getLow()) + "," + (buyPrice - candles15m.getLow()) / buyPrice * 1000);
                                 gainTimes++;
                                 sellflag = false;
                                 break;
@@ -313,15 +313,15 @@ public class EthFindBestParamsTest {
                     //begin
                     String tempStart = DateUtils.addMinutes(candleNew.getCandleTime(), 5);
                     String tempEnd = DateUtils.addMinutes(candleNew.getCandleTime(), handInTime);
-                    QueryWrapper<EthCandles5m> queryWrapper = new QueryWrapper<>();
+                    QueryWrapper<BtcCandles15m> queryWrapper = new QueryWrapper<>();
                     queryWrapper.ge("candle_time", tempStart);
                     queryWrapper.le("candle_time", tempEnd);
                     queryWrapper.orderByAsc("candle_time");
-                    List<EthCandles5m> tempList = ethCandles5mMapper.selectList(queryWrapper);
+                    List<BtcCandles15m> tempList = btcCandles15mMapper.selectList(queryWrapper);
                     boolean sellflag = true;
                     if (flag > 0) {
-                        for (EthCandles5m candles5m : tempList) {
-                            if (candles5m.getLow() <= planLossPrice) {
+                        for (BtcCandles15m candles15m : tempList) {
+                            if (candles15m.getLow() <= planLossPrice) {
                                 double loss = planLossPrice - buyPrice;
                                 sum.add(loss / buyPrice * 1000);
                                 log.info("做多止损," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + loss + "," + loss / buyPrice * 1000);
@@ -330,9 +330,9 @@ public class EthFindBestParamsTest {
                                 sellflag = false;
                                 break;
                             }
-                            if ((candles5m.getHigh() - buyPrice) >= gainAVG * lossAVG) {
-                                sum.add((candles5m.getHigh() - buyPrice) / buyPrice * 1000);
-                                log.info("做多止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (candles5m.getHigh()-buyPrice) + "," + (candles5m.getHigh()-buyPrice) / buyPrice * 1000);
+                            if ((candles15m.getHigh() - buyPrice) >= gainAVG * lossAVG) {
+                                sum.add((candles15m.getHigh() - buyPrice) / buyPrice * 1000);
+                                log.info("做多止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (candles15m.getHigh()-buyPrice) + "," + (candles15m.getHigh()-buyPrice) / buyPrice * 1000);
                                 gainTimes++;
                                 sellflag = false;
                                 break;
@@ -351,8 +351,8 @@ public class EthFindBestParamsTest {
                             log.info("做多按时," + candleNew.getCandleTime() + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
                         }
                     } else {
-                        for (EthCandles5m candles5m : tempList) {
-                            if (candles5m.getHigh() >= planLossPrice) {
+                        for (BtcCandles15m candles15m : tempList) {
+                            if (candles15m.getHigh() >= planLossPrice) {
                                 double loss = buyPrice - planLossPrice;
                                 sum.add(loss / buyPrice * 1000);
                                 log.info("做空止损," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - planLossPrice) + "," + (buyPrice - planLossPrice) / buyPrice * 1000);
@@ -361,9 +361,9 @@ public class EthFindBestParamsTest {
                                 sellflag = false;
                                 break;
                             }
-                            if ((buyPrice - candles5m.getLow()) >= gainAVG * lossAVG) {
-                                sum.add((buyPrice - candles5m.getLow()) / buyPrice * 1000);
-                                log.info("做空止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - candles5m.getLow()) + "," + (buyPrice - candles5m.getLow()) / buyPrice * 1000);
+                            if ((buyPrice - candles15m.getLow()) >= gainAVG * lossAVG) {
+                                sum.add((buyPrice - candles15m.getLow()) / buyPrice * 1000);
+                                log.info("做空止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - candles15m.getLow()) + "," + (buyPrice - candles15m.getLow()) / buyPrice * 1000);
                                 gainTimes++;
                                 sellflag = false;
                                 break;
@@ -398,13 +398,13 @@ public class EthFindBestParamsTest {
         return Math.abs(min);
     }
 
-    private boolean hourEmaCheck(EthCandles5m candleNew, double flag) {
-        //根据当前5m的close，获取当前1h的EMA5 和 EMA10
+    private boolean hourEmaCheck(BtcCandles15m candleNew, double flag) {
+        //根据当前15m的close，获取当前1h的EMA5 和 EMA10
         String hourEnd = DateUtils.getUTCWithoutMinutes(candleNew.getCandleTime());
         String hourStart = DateUtils.addMinutes(hourEnd, -60);
-        EthCandles1h ethCandles1h = ethCandles1hMapper.selectById(hourStart);
-        Double current1hEma5 = CandleUtil.getEMA(Arrays.asList(ethCandles1h.getEma5(), candleNew.getClose()), 5);
-        Double current1hEma10 = CandleUtil.getEMA(Arrays.asList(ethCandles1h.getEma10(), candleNew.getClose()), 10);
+        BtcCandles1h btcCandles1h = btcCandles1hMapper.selectById(hourStart);
+        Double current1hEma5 = CandleUtil.getEMA(Arrays.asList(btcCandles1h.getEma5(), candleNew.getClose()), 5);
+        Double current1hEma10 = CandleUtil.getEMA(Arrays.asList(btcCandles1h.getEma10(), candleNew.getClose()), 10);
         if (flag > 0) {
             return (current1hEma5 - current1hEma10) > 0;
         } else {
@@ -413,73 +413,17 @@ public class EthFindBestParamsTest {
     }
 
     @SneakyThrows
-    private boolean hour4EmaCheck(EthCandles5m candleNew, double flag) {
+    private boolean hour4EmaCheck(BtcCandles15m candleNew, double flag) {
         //获取4小时 EMA5和EMA10
         String hour4End = get4HourStart(candleNew.getCandleTime());
         String hour4Start = DateUtils.addMinutes(hour4End, -240);
-        EthCandles4h ethCandles4h = ethCandles4hMapper.selectById(hour4Start);
-        Double current4hEma5 = CandleUtil.getEMA(Arrays.asList(ethCandles4h.getEma5(), candleNew.getClose()), 5);
-        Double current4hEma10 = CandleUtil.getEMA(Arrays.asList(ethCandles4h.getEma10(), candleNew.getClose()), 10);
+        BtcCandles4h btcCandles4h = btcCandles4hMapper.selectById(hour4Start);
+        Double current4hEma5 = CandleUtil.getEMA(Arrays.asList(btcCandles4h.getEma5(), candleNew.getClose()), 5);
+        Double current4hEma10 = CandleUtil.getEMA(Arrays.asList(btcCandles4h.getEma10(), candleNew.getClose()), 10);
         if (flag > 0) {
             return (current4hEma5 - current4hEma10) > 0;
         } else {
             return (current4hEma5 - current4hEma10) < 0;
-        }
-    }
-
-    private boolean hourTrend(EthCandles5m candleNew, double flag) {
-        QueryWrapper<EthCandles1h> wrapper = new QueryWrapper<>();
-        wrapper.le("candle_time", candleNew.getCandleTime());
-        wrapper.orderByDesc("candle_time");
-        wrapper.last("limit 2");
-        List<EthCandles1h> ethCandles4hs = ethCandles1hMapper.selectList(wrapper);
-        EthCandles1h second = ethCandles4hs.get(1);
-        Double current4hEma5 = CandleUtil.getEMA(Arrays.asList(second.getEma5(), candleNew.getClose()), 5);
-        Double current4hEma10 = CandleUtil.getEMA(Arrays.asList(second.getEma10(), candleNew.getClose()), 10);
-        if (flag > 0) {
-            Double secondGap = second.getEma5() - second.getEma10();
-            Double firstGap = current4hEma5 - current4hEma10;
-            if ((secondGap - firstGap) > 0) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            Double secondGap = second.getEma10() - second.getEma5();
-            Double firstGap = current4hEma10 - current4hEma5;
-            if ((secondGap - firstGap) > 0) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
-
-    private boolean hour4Trend(EthCandles5m candleNew, double flag) {
-        QueryWrapper<EthCandles4h> wrapper = new QueryWrapper<>();
-        wrapper.le("candle_time", candleNew.getCandleTime());
-        wrapper.orderByDesc("candle_time");
-        wrapper.last("limit 2");
-        List<EthCandles4h> ethCandles4hs = ethCandles4hMapper.selectList(wrapper);
-        EthCandles4h second = ethCandles4hs.get(1);
-        Double current4hEma5 = CandleUtil.getEMA(Arrays.asList(second.getEma5(), candleNew.getClose()), 5);
-        Double current4hEma10 = CandleUtil.getEMA(Arrays.asList(second.getEma10(), candleNew.getClose()), 10);
-        if (flag > 0) {
-            Double secondGap = second.getEma5() - second.getEma10();
-            Double firstGap = current4hEma5 - current4hEma10;
-            if ((secondGap - firstGap) > 0) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            Double secondGap = second.getEma10() - second.getEma5();
-            Double firstGap = current4hEma10 - current4hEma5;
-            if ((secondGap - firstGap) > 0) {
-                return true;
-            } else {
-                return false;
-            }
         }
     }
 
@@ -499,7 +443,7 @@ public class EthFindBestParamsTest {
         return DateUtils.timeToString(calendarTime, 8);
     }
 
-    private static boolean isDifferentLabel(EthCandles5m one, EthCandles5m two) {
+    private static boolean isDifferentLabel(BtcCandles15m one, BtcCandles15m two) {
         Double oneEmaMargin = one.getEma5() - one.getEma10();
         Double twoEmaMargin = two.getEma5() - two.getEma10();
         if (oneEmaMargin * twoEmaMargin > 0) {
@@ -511,25 +455,25 @@ public class EthFindBestParamsTest {
 
     //获取买入价，一般等于下一个5分钟的开盘价获取下一个一分钟的开盘价
     private Double getBuyPrice(String time) {
-        String buyTime = DateUtils.addMinutes(time, 5);
-        EthCandles5m ethCandles5m = ethCandles5mMapper.selectById(buyTime);
-        return ethCandles5m.getOpen();
+        String buyTime = DateUtils.addMinutes(time, 15);
+        BtcCandles15m btcCandles15m = btcCandles15mMapper.selectById(buyTime);
+        return btcCandles15m.getOpen();
     }
 
     //获取止损价
-    private Map<String,Double> getLossPrice(EthCandles5m candle, Double buyPrice, double flag, Double lossN, Integer lossM) {
+    private Map<String,Double> getLossPrice(BtcCandles15m candle, Double buyPrice, double flag, Double lossN, Integer lossM) {
         String end = candle.getCandleTime();
         String start = DateUtils.addMinutes(end, -lossM.intValue());
-        QueryWrapper<EthCandles5m> wrapper = new QueryWrapper<>();
+        QueryWrapper<BtcCandles15m> wrapper = new QueryWrapper<>();
         wrapper.ge("candle_time", start);
         wrapper.le("candle_time", end);
         wrapper.orderByAsc("candle_time");
-        List<EthCandles5m> ethCandles5ms = ethCandles5mMapper.selectList(wrapper);
-        Double highest = ethCandles5ms.stream().mapToDouble(EthCandles5m::getHigh).max().getAsDouble();
-        Double lowest = ethCandles5ms.stream().mapToDouble(EthCandles5m::getLow).min().getAsDouble();
-        Double highSum = ethCandles5ms.stream().mapToDouble(EthCandles5m::getHigh).sum();
-        Double lowSum = ethCandles5ms.stream().mapToDouble(EthCandles5m::getLow).sum();
-        Double avgMargin = (highSum - lowSum) / ethCandles5ms.size();
+        List<BtcCandles15m> btcCandles15ms = btcCandles15mMapper.selectList(wrapper);
+        Double highest = btcCandles15ms.stream().mapToDouble(BtcCandles15m::getHigh).max().getAsDouble();
+        Double lowest = btcCandles15ms.stream().mapToDouble(BtcCandles15m::getLow).min().getAsDouble();
+        Double highSum = btcCandles15ms.stream().mapToDouble(BtcCandles15m::getHigh).sum();
+        Double lowSum = btcCandles15ms.stream().mapToDouble(BtcCandles15m::getLow).sum();
+        Double avgMargin = (highSum - lowSum) / btcCandles15ms.size();
         Map<String,Double> map = new HashMap<>();
         //计划损失 1.5N的价格
         map.put("lossAVG",avgMargin);
