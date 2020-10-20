@@ -33,9 +33,7 @@ public class TradeTest {
 
     @Test
     public void test2(){
-        String algo_id = "609902340460941312";
-        String dealDetail = ethTradeService.getDealDetail(algo_id);
-        System.out.println(dealDetail);
+        String holds = swapUserAPIServive.getHolds(eth_instrument_id);
     }
 
     @Test
