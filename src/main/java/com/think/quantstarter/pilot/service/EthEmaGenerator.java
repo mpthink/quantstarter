@@ -54,7 +54,7 @@ public class EthEmaGenerator {
             current.setEma10((CandleUtil.getEMA(data10,10)));
         }
         ethCandles5mService.saveOrUpdateBatch(ethCandles5mList);
-        resultMap.put("old",ethCandles5mList.get(1));
+        resultMap.put("old",ethCandles5mList.get(2));
         resultMap.put("new",ethCandles5mList.get(1));
         return resultMap;
     }
