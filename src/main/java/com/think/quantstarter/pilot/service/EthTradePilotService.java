@@ -11,13 +11,17 @@ import com.think.quantstarter.dataCollect.service.IEthCandles1hService;
 import com.think.quantstarter.dataCollect.service.IEthCandles4hService;
 import com.think.quantstarter.dataCollect.service.IEthCandles5mService;
 import com.think.quantstarter.dataCollect.utils.ConvertToObjectUtil;
-import com.think.quantstarter.rest.bean.swap.result.PerOrderResult;
+import com.think.quantstarter.pilot.bean.OrderRecord;
+import com.think.quantstarter.rest.bean.swap.result.*;
 import com.think.quantstarter.rest.constant.APIConstants;
 import com.think.quantstarter.rest.enums.FuturesTransactionTypeEnum;
 import com.think.quantstarter.rest.exception.APIException;
 import com.think.quantstarter.utils.DateUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -54,6 +58,9 @@ public class EthTradePilotService {
     //计划盈利的avgMargin的倍数
     private static final int gainN = 6;
 
+    //记录下单记录，并在到期后卖出
+    private static final List<OrderRecord> orderRecords = new ArrayList<>();
+
     @Resource
     private ICandlesService candlesService;
     @Resource
@@ -67,8 +74,49 @@ public class EthTradePilotService {
     @Resource
     private EthTradeService ethTradeService;
 
-    //@Scheduled(cron = "1 0/5 * * * ?")
-    //@Retryable(include = {APIException.class}, maxAttempts = 3)
+
+    /**
+     * 当有订单后，开始判断订单是否过期
+     * 1. 检查单据是否到期，到期卖出，并从orderRecords删除
+     * 2. 检查计划单是否触发，如果触发，从orderRecords删除
+     */
+    @Scheduled(cron = "0/5 * * * * ?")
+    @SneakyThrows
+    public void checkAndCleanOrders(){
+        if(orderRecords.size()>0){
+            while (true){
+                List<OrderRecord> removes = new ArrayList<>();
+                orderRecords.forEach(orderRecord -> {
+                    String buyTime = orderRecord.getTimestamp();
+                    long timeGap = countTimeGapMinutesWithNow(buyTime);
+                    if(timeGap >= holdTime){
+                        //到期卖出
+                        log.info("到期卖出....{}",orderRecord);
+                        ethTradeService.order(orderRecord.getOrder_type());
+                        ethTradeService.cancelOrderAlgo(Collections.singletonList(orderRecord.getAlgo_id()));
+                        removes.add(orderRecord);
+                    }
+                    //检查策略单是否生效
+                    SwapOrders swapOrders = ethTradeService.checkAlgoOrder(orderRecord.getAlgo_id());
+                    if(swapOrders.getStatus().equals("2")){
+                        log.info("止盈止损已经触发....{}",orderRecord);
+                        removes.add(orderRecord);
+                    }
+                });
+                orderRecords.removeAll(removes);
+                if(orderRecords.size() == 0){
+                    break;
+                }
+                Thread.sleep(1000);
+            }
+        }
+    }
+
+    /**
+     * 每隔5分钟去判断是否下单
+     */
+    @Scheduled(cron = "1 0/5 * * * ?")
+    @Retryable(include = {APIException.class}, maxAttempts = 3)
     public void openOrder(){
         try{
             //获取最新的candle数据
@@ -107,6 +155,10 @@ public class EthTradePilotService {
                         return;
                     }
                     //买涨下单
+                    OrderRecord orderRecord = doOpenOrder(candles5mNew, flag);
+                    if(orderRecord != null){
+                        orderRecords.add(orderRecord);
+                    }
                 }
                 if(flag<0 && hour1EmaCheck && hour4EmaCheck){
                     if(stopTimes >= limitStopTimes){
@@ -117,6 +169,10 @@ public class EthTradePilotService {
                         return;
                     }
                     //买跌下单
+                    OrderRecord orderRecord = doOpenOrder(candles5mNew, flag);
+                    if(orderRecord != null){
+                        orderRecords.add(orderRecord);
+                    }
                 }
             }
         }catch (APIException e){
@@ -127,14 +183,109 @@ public class EthTradePilotService {
         }
     }
 
-    private void doOpenOrder(double flag){
-        if(flag>0){
-            //open long
-            PerOrderResult order = ethTradeService.order(FuturesTransactionTypeEnum.OPEN_LONG);
-        }else {
-            //open short
-            PerOrderResult order = ethTradeService.order(FuturesTransactionTypeEnum.OPEN_SHORT);
+    /**
+     * 每隔一段时间去检查orderRecords的持单数量和真实持单数量是否一致，有可能会有多单在手，但是显示一个单据
+     */
+    @Scheduled(cron = "0 0 8 * * ?")
+    public void compareOrders(){
+        if(orderRecords.size()>0){
+            log.info("check real position and procedure!");
+            int sumOne = 0;
+            int sumTwo = 0;
+            for (OrderRecord orderRecord : orderRecords) {
+                OrderInfo orderInfo = ethTradeService.getOrderInfo(orderRecord.getOrder_id());
+                sumOne = sumOne + Integer.valueOf(orderInfo.getSize());
+            }
+            PositionVO positionVO = ethTradeService.getPosition();
+            List<Position> holding = positionVO.getHolding();
+            for (Position position : holding) {
+                sumTwo = sumTwo + Integer.valueOf(position.getPosition());
+            }
+            if(sumOne != sumTwo){
+                //如果不一样的话，清空所有订单和orderRecords
+                log.error("检查到程序订单和实际订单不一致，清空所有订单信息");
+                log.error("orderRecords...{}", orderRecords);
+                log.error("实际position 大小: {}", sumTwo);
+                ethTradeService.closeAllPositions();
+                orderRecords.clear();
+            }
+            log.info("End checking real position and procedure!");
         }
+    }
+
+    /**
+     * 定时清理1个月之前的历史数据，防止数据过大
+     */
+    @Scheduled(cron = "0 0 23 15 * ?")
+    public void removeHistoryData(){
+        Date now = new Date();
+        String nowString = DateUtils.timeToString(now, 8);
+        String monthAgo = DateUtils.addMinutes(nowString, -60 * 24 * 30);
+        QueryWrapper<EthCandles5m> ethCandles5mWrapper = new QueryWrapper<>();
+        ethCandles5mWrapper.le("candle_time", monthAgo);
+        ethCandles5mService.remove(ethCandles5mWrapper);
+        QueryWrapper<EthCandles1h> ethCandles1hQueryWrapper = new QueryWrapper<>();
+        ethCandles5mWrapper.le("candle_time", monthAgo);
+        ethCandles1hService.remove(ethCandles1hQueryWrapper);
+        QueryWrapper<EthCandles4h> ethCandles4hWrapper = new QueryWrapper<>();
+        ethCandles4hWrapper.le("candle_time", monthAgo);
+        ethCandles4hService.remove(ethCandles4hWrapper);
+    }
+
+    /**
+     * 需要返回一个记录order 信息的BO，用来记录order_id，开单均价， FuturesTransactionTypeEnum， 止盈止损单的ID等信息
+     * 未考虑下单失败的情况
+     * @param flag
+     */
+    @SneakyThrows
+    private OrderRecord doOpenOrder(EthCandles5m ethCandles5m, double flag){
+        String order_id = "";
+        String price_avg = "";
+        String algo_id = "";
+        String timeStamp = "";
+        FuturesTransactionTypeEnum order_type;
+        Map<String, Double> lossAndGainPrice;
+        try{
+            if(flag>0){
+                //open long
+                order_type = FuturesTransactionTypeEnum.CLOSE_LONG;
+                PerOrderResult order = ethTradeService.order(FuturesTransactionTypeEnum.OPEN_LONG);
+                order_id = order.getOrder_id();
+                OrderInfo orderInfo = ethTradeService.getOrderInfo(order_id);
+                price_avg = orderInfo.getPrice_avg();
+                timeStamp = orderInfo.getTimestamp();
+                lossAndGainPrice = getLossAndGainPrice(ethCandles5m, Double.valueOf(price_avg), flag);
+                SwapOrderResultVO swapOrderResultVO = ethTradeService.swapOrderAlgo(FuturesTransactionTypeEnum.CLOSE_LONG, lossAndGainPrice.get("gainPrice").toString(), lossAndGainPrice.get("lossPrice").toString());
+                algo_id = swapOrderResultVO.getData().getAlgo_id();
+            }else {
+                //open short
+                order_type = FuturesTransactionTypeEnum.CLOSE_SHORT;
+                PerOrderResult order = ethTradeService.order(FuturesTransactionTypeEnum.OPEN_SHORT);
+                order_id = order.getOrder_id();
+                OrderInfo orderInfo = ethTradeService.getOrderInfo(order_id);
+                price_avg = orderInfo.getPrice_avg();
+                timeStamp = orderInfo.getTimestamp();
+                lossAndGainPrice = getLossAndGainPrice(ethCandles5m, Double.valueOf(price_avg), flag);
+                SwapOrderResultVO swapOrderResultVO = ethTradeService.swapOrderAlgo(FuturesTransactionTypeEnum.CLOSE_SHORT, lossAndGainPrice.get("gainPrice").toString(), lossAndGainPrice.get("lossPrice").toString());
+                algo_id = swapOrderResultVO.getData().getAlgo_id();
+            }
+        }catch (APIException e){
+            log.error("下单失败，取消订单和止盈止损单...");
+            if(Strings.isNotEmpty(order_id)){
+                ethTradeService.cancelOrder(order_id);
+            }
+            if(Strings.isNotEmpty(algo_id)){
+                ethTradeService.cancelOrderAlgo(Collections.singletonList(algo_id));
+            }
+            return null;
+        }
+        OrderRecord build = OrderRecord.builder()
+                .order_id(order_id)
+                .algo_id(algo_id)
+                .timestamp(timeStamp)
+                .order_type(order_type)
+                .build();
+        return build;
     }
 
 
@@ -189,6 +340,15 @@ public class EthTradePilotService {
     private long countTimeGapMinutes(String time1, String time2) {
         Date start = DateUtils.parseUTCTime(time1);
         Date end = DateUtils.parseUTCTime(time2);
+        long gap = (end.getTime() - start.getTime()) / 1000;
+        long min = gap / 60;
+        return Math.abs(min);
+    }
+
+    @SneakyThrows
+    private long countTimeGapMinutesWithNow(String time1) {
+        Date start = DateUtils.parseUTCTime(time1);
+        Date end = new Date();
         long gap = (end.getTime() - start.getTime()) / 1000;
         long min = gap / 60;
         return Math.abs(min);

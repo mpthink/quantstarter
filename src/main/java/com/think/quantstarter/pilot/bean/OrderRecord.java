@@ -1,11 +1,15 @@
 package com.think.quantstarter.pilot.bean;
 
 import com.think.quantstarter.rest.enums.FuturesTransactionTypeEnum;
+import lombok.Builder;
+import lombok.Data;
 
 /**
  * @author mpthink
  * @date 2020/10/14 11:37
  */
+@Data
+@Builder
 public class OrderRecord {
     /**
      * 下单order id

@@ -2,6 +2,7 @@ package com.think.quantstarter.pilot.service;
 
 import com.alibaba.fastjson.JSON;
 import com.think.quantstarter.rest.bean.swap.param.CancelOrderAlgo;
+import com.think.quantstarter.rest.bean.swap.param.ClosePosition;
 import com.think.quantstarter.rest.bean.swap.param.PpOrder;
 import com.think.quantstarter.rest.bean.swap.param.SwapOrderParam;
 import com.think.quantstarter.rest.bean.swap.result.*;
@@ -12,6 +13,7 @@ import com.think.quantstarter.rest.service.swap.SwapTradeAPIService;
 import com.think.quantstarter.rest.service.swap.SwapUserAPIServive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -42,7 +44,7 @@ public class EthTradeService {
     /**
      * 定时更改order size的大小
      */
-    //@Scheduled(cron = "0 59 23 L * ?")
+    @Scheduled(cron = "0 59 23 15 * ?")
     @Retryable(include = {APIException.class}, maxAttempts = 3)
     public void changeOrderSize() {
         AccountsInfo ethAccountInfo = getEthAccountInfo();
@@ -55,6 +57,13 @@ public class EthTradeService {
         if (planSize > order_size) {
             order_size = planSize;
         }
+    }
+
+
+    public TickerVO getTicker(){
+        String ticker = swapMarketAPIService.getTickerApi(eth_instrument_id);
+        TickerVO tickerVO = JSON.parseObject(ticker, TickerVO.class);
+        return tickerVO;
     }
 
     /**
@@ -71,6 +80,17 @@ public class EthTradeService {
                 .order_type(order_type)
                 .build();
         return swapTradeAPIService.order(order);
+    }
+
+    /**
+     * 所有单据都市价成交
+     *
+     * @param order_id
+     * @return
+     */
+    public CancelOrder cancelOrder(String order_id) {
+        String cancelOrderByOrderId = swapTradeAPIService.cancelOrderByOrderId(eth_instrument_id, order_id);
+        return JSON.parseObject(cancelOrderByOrderId, CancelOrder.class);
     }
 
     /**
@@ -123,6 +143,31 @@ public class EthTradeService {
     public AccountsInfo getEthAccountInfo() {
         String result = swapUserAPIServive.selectAccount(eth_instrument_id);
         return JSON.parseObject(result, SingleAccountsVO.class).getInfo();
+    }
+
+    public PositionVO getPosition(){
+        String result = swapUserAPIServive.getPosition(eth_instrument_id);
+        return JSON.parseObject(result, PositionVO.class);
+    }
+
+    public void closeAllPositions(){
+        try{
+            ClosePosition longP = new ClosePosition();
+            longP.setInstrument_id(eth_instrument_id);
+            longP.setDirection("long");
+            swapTradeAPIService.closePosition(longP);
+        }catch (APIException e){
+            log.error("close long has error");
+        }
+
+        try{
+            ClosePosition shortP = new ClosePosition();
+            shortP.setInstrument_id(eth_instrument_id);
+            shortP.setDirection("short");
+            swapTradeAPIService.closePosition(shortP);
+        }catch (APIException e){
+            log.error("close short has error");
+        }
     }
 
 }

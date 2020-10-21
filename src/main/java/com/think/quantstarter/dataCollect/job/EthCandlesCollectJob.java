@@ -8,7 +8,6 @@ import com.think.quantstarter.dataCollect.service.*;
 import com.think.quantstarter.dataCollect.utils.ConvertToObjectUtil;
 import com.think.quantstarter.rest.constant.APIConstants;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -51,62 +50,62 @@ public class EthCandlesCollectJob {
     @Resource
     private IEthCandles1wService ethCandles1wService;
 
-    @Scheduled(cron = "30 0/1 * * * ?")
+    //@Scheduled(cron = "30 0/1 * * * ?")
     public void get1MinCandles(){
         getCandles(APIConstants.GRANULARITY1MIN, EthCandles1m.class, ethCandles1mService);
     }
 
-    @Scheduled(cron = "31 0/3 * * * ?")
+    //@Scheduled(cron = "31 0/3 * * * ?")
     public void get3MinCandles(){
         getCandles(APIConstants.GRANULARITY3MIN, EthCandles3m.class, ethCandles3mService);
     }
 
-    @Scheduled(cron = "32 0/5 * * * ?")
+    //@Scheduled(cron = "32 0/5 * * * ?")
     public void get5MinCandles(){
         getCandles(APIConstants.GRANULARITY5MIN, EthCandles5m.class, ethCandles5mService);
     }
 
-    @Scheduled(cron = "33 0/15 * * * ?")
+    //@Scheduled(cron = "33 0/15 * * * ?")
     public void get15MinCandles(){
         getCandles(APIConstants.GRANULARITY15MIN, EthCandles15m.class, ethCandles15mService);
     }
 
-    @Scheduled(cron = "34 0/30 * * * ?")
+    //@Scheduled(cron = "34 0/30 * * * ?")
     public void get30MinCandles(){
         getCandles(APIConstants.GRANULARITY30MIN, EthCandles30m.class, ethCandles30mService);
     }
 
-    @Scheduled(cron = "35 0 0/1 * * ?")
+    //@Scheduled(cron = "35 0 0/1 * * ?")
     public void get1HourCandles(){
         getCandles(APIConstants.GRANULARITY1HOUR, EthCandles1h.class, ethCandles1hService);
     }
 
-    @Scheduled(cron = "36 0 0/2 * * ?")
+    //@Scheduled(cron = "36 0 0/2 * * ?")
     public void get2HourCandles(){
         getCandles(APIConstants.GRANULARITY2HOUR, EthCandles2h.class, ethCandles2hService);
     }
 
-    @Scheduled(cron = "37 0 0/4 * * ?")
+    //@Scheduled(cron = "37 0 0/4 * * ?")
     public void get4HourCandles(){
         getCandles(APIConstants.GRANULARITY4HOUR, EthCandles4h.class, ethCandles4hService);
     }
 
-    @Scheduled(cron = "38 0 0/6 * * ?")
+    //@Scheduled(cron = "38 0 0/6 * * ?")
     public void get6HourCandles(){
         getCandles(APIConstants.GRANULARITY6HOUR, EthCandles6h.class, ethCandles6hService);
     }
 
-    @Scheduled(cron = "39 0 0/12 * * ?")
+    //@Scheduled(cron = "39 0 0/12 * * ?")
     public void get12HourCandles(){
         getCandles(APIConstants.GRANULARITY12HOUR, EthCandles12h.class, ethCandles12hService);
     }
 
-    @Scheduled(cron = "40 0 0 1/1 * ?")
+    //@Scheduled(cron = "40 0 0 1/1 * ?")
     public void get1DayCandles(){
         getCandles(APIConstants.GRANULARITY1DAY, EthCandles1d.class, ethCandles1dService);
     }
 
-    @Scheduled(cron = "41 0 0 ? * 1")
+    //@Scheduled(cron = "41 0 0 ? * 1")
     public void get1WeekCandles(){
         getCandles(APIConstants.GRANULARITY1WEEK, EthCandles1w.class, ethCandles1wService);
     }

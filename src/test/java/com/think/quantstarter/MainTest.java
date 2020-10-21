@@ -1,6 +1,8 @@
 package com.think.quantstarter;
 
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author mpthink
@@ -28,7 +30,13 @@ public class MainTest {
 
     public static void main(String[] args) throws ParseException {
 
-
+        List<Integer> test = new ArrayList<>();
+        test.add(1);
+        test.add(2);
+        List<Integer> test2 = new ArrayList<>();
+        test2.add(2);
+        test.removeAll(test2);
+        System.out.println(test);
 
 //        for(int i=0;i<20;i++)
 //        System.out.println(getRanInArr(lossNArray));
