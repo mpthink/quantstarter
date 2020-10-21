@@ -137,6 +137,7 @@ public class EthTradePilotService {
                 //判断是否ema5和ema10交替的时间间隔是否大于given intervalBuy，这个条件一定程度上可以消除频繁震荡带来的下单风险
                 //本想设置购买间隔的，但是发现该参数对于结果更好，误打误撞的一个参数
                 if (countTimeGapMinutes(candles5mNew.getCandleTime(), lastBuyTime) < intervalBuy) {
+                    log.info("interval buy time is less than {}", intervalBuy);
                     return;
                 } else {
                     lastBuyTime = candles5mNew.getCandleTime();
@@ -146,6 +147,7 @@ public class EthTradePilotService {
                 boolean hour1EmaCheck = hourEmaCheck(ethCandles1h,flag);
                 boolean hour4EmaCheck = hour4EmaCheck(ethCandles4h,flag);
                 if(flag>0 && hour1EmaCheck && hour4EmaCheck){
+                    log.info("check stop times....");
                     if(stopTimes >= limitStopTimes){
                         //避免连续止损，根据测试，一般亏损会连续好几次，这样可以避免不必要的下单，但是也有可能错过买入机会
                         stopTimes++;
@@ -155,12 +157,15 @@ public class EthTradePilotService {
                         return;
                     }
                     //买涨下单
+                    log.info("open long....time: {}", candles5mNew.getCandleTime());
                     OrderRecord orderRecord = doOpenOrder(candles5mNew, flag);
+                    log.info("order Record: {}",orderRecord);
                     if(orderRecord != null){
                         orderRecords.add(orderRecord);
                     }
                 }
                 if(flag<0 && hour1EmaCheck && hour4EmaCheck){
+                    log.info("check stop times....");
                     if(stopTimes >= limitStopTimes){
                         stopTimes++;
                         if(stopTimes == maxStopTimes){
@@ -169,7 +174,9 @@ public class EthTradePilotService {
                         return;
                     }
                     //买跌下单
+                    log.info("open short....time: {}", candles5mNew.getCandleTime());
                     OrderRecord orderRecord = doOpenOrder(candles5mNew, flag);
+                    log.info("order Record: {}",orderRecord);
                     if(orderRecord != null){
                         orderRecords.add(orderRecord);
                     }
