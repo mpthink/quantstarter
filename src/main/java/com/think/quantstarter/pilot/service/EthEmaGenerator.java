@@ -73,8 +73,8 @@ public class EthEmaGenerator {
             data5.add(current.getClose());
             current.setEma5(CandleUtil.getEMA(data5,5));
             List<Double> data10 = new ArrayList<>();
-            data5.add(old.getEma10());
-            data5.add(current.getClose());
+            data10.add(old.getEma10());
+            data10.add(current.getClose());
             current.setEma10((CandleUtil.getEMA(data10,10)));
             if(current.getCandleTime() == candleTime){
                 index = i;
@@ -98,8 +98,8 @@ public class EthEmaGenerator {
             data5.add(current.getClose());
             current.setEma5(CandleUtil.getEMA(data5,5));
             List<Double> data10 = new ArrayList<>();
-            data5.add(old.getEma10());
-            data5.add(current.getClose());
+            data10.add(old.getEma10());
+            data10.add(current.getClose());
             current.setEma10((CandleUtil.getEMA(data10,10)));
             if(current.getCandleTime() == candleTime){
                 index = i;
