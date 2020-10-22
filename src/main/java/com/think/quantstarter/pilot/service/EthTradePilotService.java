@@ -373,6 +373,9 @@ public class EthTradePilotService {
     private void getCandles(String granularity, Class clz, IService service){
         JSONArray candles = candlesService.getCandles(eth_instrument_id, granularity, get_candle_records);
         List<Object> objectList = ConvertToObjectUtil.convertJsonArrayToObjects(candles, clz);
+        if(APIConstants.GRANULARITY5MIN.equals(granularity)){
+            log.info("candles: [{}]", objectList);
+        }
         service.saveOrUpdateBatch(objectList);
     }
 

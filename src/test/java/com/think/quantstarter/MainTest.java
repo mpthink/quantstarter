@@ -1,5 +1,7 @@
 package com.think.quantstarter;
 
+import com.think.quantstarter.rest.bean.swap.result.Position;
+
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,13 +32,13 @@ public class MainTest {
 
     public static void main(String[] args) throws ParseException {
 
-        List<Integer> test = new ArrayList<>();
-        test.add(1);
-        test.add(2);
-        List<Integer> test2 = new ArrayList<>();
-        test2.add(2);
-        test.removeAll(test2);
-        System.out.println(test);
+        List<Position> test = new ArrayList<>();
+        Position p = new Position();
+        test.add(p);
+        Position p1 = test.get(0);
+        p1.setLast("1");
+        System.out.println(p.getLast());
+        System.out.println(p1.getLast());
 
 //        for(int i=0;i<20;i++)
 //        System.out.println(getRanInArr(lossNArray));
