@@ -2,7 +2,6 @@ package com.think.quantstarter.pilot.service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.think.quantstarter.dataCollect.entity.EthCandles1h;
 import com.think.quantstarter.dataCollect.entity.EthCandles4h;
@@ -355,7 +354,7 @@ public class EthTradePilotService {
         long minutes = Duration.between(candleTime.toInstant(), timeNow.toInstant()).toMinutes();
         if(minutes != 0){
             log.warn("The gap of candles5m latest time and now is not zero, will retry: [{}], {}, {}", minutes, candleTimeString,timeNow);
-            throw new ApiException("The gap of candles5m latest time and now is not zero, will retry");
+            throw new APIException("The gap of candles5m latest time and now is not zero, will retry");
         }
     }
 
