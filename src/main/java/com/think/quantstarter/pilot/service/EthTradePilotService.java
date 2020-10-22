@@ -20,8 +20,11 @@ import com.think.quantstarter.utils.DateUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.context.annotation.Bean;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -74,6 +77,12 @@ public class EthTradePilotService {
     @Resource
     private EthTradeService ethTradeService;
 
+    @Bean
+    public TaskScheduler taskScheduler() {
+        ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
+        taskScheduler.setPoolSize(20);
+        return taskScheduler;
+    }
 
     /**
      * 当有订单后，开始判断订单是否过期
