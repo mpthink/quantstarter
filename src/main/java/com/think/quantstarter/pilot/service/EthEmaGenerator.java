@@ -40,6 +40,8 @@ public class EthEmaGenerator {
         wrapper.orderByDesc("candle_time");
         wrapper.last("limit " + records);
         List<EthCandles5m> ethCandles5mList = ethCandles5mService.list(wrapper);
+        log.info("latest candle5m record: [{}]", ethCandles5mList.get(0));
+        log.info("all latest records from database: [{}]", ethCandles5mList);
         Map<String,EthCandles5m> resultMap = new HashMap<>();
         for(int i=8;i>0;i--){
             EthCandles5m current = ethCandles5mList.get(i);

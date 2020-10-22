@@ -31,8 +31,6 @@ import javax.annotation.Resource;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 
 /**
@@ -333,19 +331,15 @@ public class EthTradePilotService {
         }
     }
 
-    //每次cronjob完成后，需要检查最新一条数据是否是最近一条5m的数据
+    //每次cronjob完成后，需要检查最新一条数据是否是最近一条5m的数据, 最近一条并不是最新的那条，最新的那条不计入EMA计算
     @SneakyThrows
     private boolean checkCandle5mTime(EthCandles5m candles5mNew) {
         String candleTimeString = candles5mNew.getCandleTime();
         Date candleTime = DateUtils.parseUTCTime(candleTimeString);
         Date timeNow = new Date();
-        Duration.between(candleTime.toInstant(), timeNow.toInstant()).toMinutes();
-
-        ZoneId zoneId = ZoneId.systemDefault();
-        LocalDateTime localDateTime = candleTime.toInstant().atZone(zoneId).toLocalDateTime();
-        LocalDateTime temp1 = localDateTime.plusMinutes(5);
-        LocalDateTime temp2 = LocalDateTime.now();
-        if(temp1.getMinute() == temp2.getMinute()){
+        long minutes = Duration.between(candleTime.toInstant(), timeNow.toInstant()).toMinutes();
+        log.info("candles5mNew gap with current: [{}]", minutes);
+        if(minutes == 5){
             return true;
         }else{
             return false;
