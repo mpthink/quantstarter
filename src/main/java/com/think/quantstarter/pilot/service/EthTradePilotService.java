@@ -2,6 +2,7 @@ package com.think.quantstarter.pilot.service;
 
 import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.exceptions.ApiException;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.think.quantstarter.dataCollect.entity.EthCandles1h;
 import com.think.quantstarter.dataCollect.entity.EthCandles4h;
@@ -338,11 +339,23 @@ public class EthTradePilotService {
         Date candleTime = DateUtils.parseUTCTime(candleTimeString);
         Date timeNow = new Date();
         long minutes = Duration.between(candleTime.toInstant(), timeNow.toInstant()).toMinutes();
-        log.info("candles5mNew gap with current: [{}]", minutes);
         if(minutes == 5){
             return true;
         }else{
+            log.warn("candles5mNew gap with current: [{}], {}, {}", minutes, candleTimeString,timeNow);
             return false;
+        }
+    }
+
+    //每次cronjob完成后，需要检查最新一条数据是否是最近一条5m的数据, 最近一条并不是最新的那条，最新的那条不计入EMA计算
+    @SneakyThrows
+    private void checkCandle5mTime(String candleTimeString) {
+        Date candleTime = DateUtils.parseUTCTime(candleTimeString);
+        Date timeNow = new Date();
+        long minutes = Duration.between(candleTime.toInstant(), timeNow.toInstant()).toMinutes();
+        if(minutes != 0){
+            log.warn("The gap of candles5m latest time and now is not zero, will retry: [{}], {}, {}", minutes, candleTimeString,timeNow);
+            throw new ApiException("The gap of candles5m latest time and now is not zero, will retry");
         }
     }
 
@@ -368,7 +381,8 @@ public class EthTradePilotService {
         JSONArray candles = candlesService.getCandles(eth_instrument_id, granularity, get_candle_records);
         List<Object> objectList = ConvertToObjectUtil.convertJsonArrayToObjects(candles, clz);
         if(APIConstants.GRANULARITY5MIN.equals(granularity)){
-            log.info("candles: [{}]", objectList);
+            EthCandles5m ethCandles5m = (EthCandles5m) objectList.get(0);
+            checkCandle5mTime(ethCandles5m.getCandleTime());
         }
         service.saveOrUpdateBatch(objectList);
     }
