@@ -86,11 +86,11 @@ public class BchFindBestParamsTest {
     @Test
     public void testOne() {
         SelectConditions selectConditions = SelectConditions.builder()
-                .lossN(2).lossM(60)
+                .lossN(5).lossM(120)
                 .hour1Ema(false).hour4Ema(false)
-                .maxStopTimes(7)
-                .gainAVG(4)
-                .handInTime(245).intervalBuy(120).build();
+                .maxStopTimes(6)
+                .gainAVG(6)
+                .handInTime(245).intervalBuy(60).build();
         countStrategy(selectConditions);
     }
 
@@ -147,7 +147,7 @@ public class BchFindBestParamsTest {
     @SneakyThrows
     public void countStrategy(SelectConditions condition) {
         //获取最早一条记录
-        //log.info("Begin.....................................................................");
+        log.info("Begin.....................................................................");
 
         int gainTimes = 0;
         int lossTimes = 0;
@@ -165,7 +165,7 @@ public class BchFindBestParamsTest {
 
         QueryWrapper<BchCandles5m> wrapper = new QueryWrapper<>();
         wrapper.orderByAsc("candle_time");
-//        wrapper.eq("candle_time","2020-09-08T08:00:00.000Z");
+        wrapper.eq("candle_time","2020-09-11T08:00:00.000Z");
         wrapper.last("limit 1");
         BchCandles5m oldest = bchCandles5mMapper.selectOne(wrapper);
         String start = oldest.getCandleTime();
@@ -238,7 +238,7 @@ public class BchFindBestParamsTest {
                             if (candles5m.getLow() <= planLossPrice) {
                                 double loss = planLossPrice - buyPrice;
                                 sum.add(loss / buyPrice * 1000);
-                                //log.info("做多止损," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + loss + "," + loss / buyPrice * 1000);
+                                log.info("做多止损," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + loss + "," + loss / buyPrice * 1000);
                                 lossTimes++;
                                 stopTimes++;
                                 sellflag = false;
@@ -246,7 +246,7 @@ public class BchFindBestParamsTest {
                             }
                             if ((candles5m.getHigh() - buyPrice) >= gainAVG * lossAVG) {
                                 sum.add((candles5m.getHigh() - buyPrice) / buyPrice * 1000);
-                                //log.info("做多止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (candles5m.getHigh()-buyPrice) + "," + (candles5m.getHigh()-buyPrice) / buyPrice * 1000);
+                                log.info("做多止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (candles5m.getHigh()-buyPrice) + "," + (candles5m.getHigh()-buyPrice) / buyPrice * 1000);
                                 gainTimes++;
                                 sellflag = false;
                                 break;
@@ -262,14 +262,14 @@ public class BchFindBestParamsTest {
                                 stopTimes++;
                             }
                             sum.add(loss / buyPrice * 1000);
-                            //log.info("做多按时," + candleNew.getCandleTime() + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
+                            log.info("做多按时," + candleNew.getCandleTime() + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
                         }
                     } else {
                         for (BchCandles5m candles5m : tempList) {
                             if (candles5m.getHigh() >= planLossPrice) {
                                 double loss = buyPrice - planLossPrice;
                                 sum.add(loss / buyPrice * 1000);
-                                //log.info("做空止损," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - planLossPrice) + "," + (buyPrice - planLossPrice) / buyPrice * 1000);
+                                log.info("做空止损," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - planLossPrice) + "," + (buyPrice - planLossPrice) / buyPrice * 1000);
                                 lossTimes++;
                                 stopTimes++;
                                 sellflag = false;
@@ -277,7 +277,7 @@ public class BchFindBestParamsTest {
                             }
                             if ((buyPrice - candles5m.getLow()) >= gainAVG * lossAVG) {
                                 sum.add((buyPrice - candles5m.getLow()) / buyPrice * 1000);
-                                //log.info("做空止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - candles5m.getLow()) + "," + (buyPrice - candles5m.getLow()) / buyPrice * 1000);
+                                log.info("做空止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - candles5m.getLow()) + "," + (buyPrice - candles5m.getLow()) / buyPrice * 1000);
                                 gainTimes++;
                                 sellflag = false;
                                 break;
@@ -293,7 +293,7 @@ public class BchFindBestParamsTest {
                                 stopTimes++;
                             }
                             sum.add(loss / buyPrice * 1000);
-                            //log.info("做空按时," + candleNew.getCandleTime() + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
+                            log.info("做空按时," + candleNew.getCandleTime() + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
                         }
                     }
                     //end
@@ -324,7 +324,7 @@ public class BchFindBestParamsTest {
                             if (candles5m.getLow() <= planLossPrice) {
                                 double loss = planLossPrice - buyPrice;
                                 sum.add(loss / buyPrice * 1000);
-                                //log.info("做多止损," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + loss + "," + loss / buyPrice * 1000);
+                                log.info("做多止损," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + loss + "," + loss / buyPrice * 1000);
                                 lossTimes++;
                                 stopTimes++;
                                 sellflag = false;
@@ -332,7 +332,7 @@ public class BchFindBestParamsTest {
                             }
                             if ((candles5m.getHigh() - buyPrice) >= gainAVG * lossAVG) {
                                 sum.add((candles5m.getHigh() - buyPrice) / buyPrice * 1000);
-                                //log.info("做多止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (candles5m.getHigh()-buyPrice) + "," + (candles5m.getHigh()-buyPrice) / buyPrice * 1000);
+                                log.info("做多止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (candles5m.getHigh()-buyPrice) + "," + (candles5m.getHigh()-buyPrice) / buyPrice * 1000);
                                 gainTimes++;
                                 sellflag = false;
                                 break;
@@ -348,14 +348,14 @@ public class BchFindBestParamsTest {
                                 stopTimes++;
                             }
                             sum.add(loss / buyPrice * 1000);
-                            //log.info("做多按时," + candleNew.getCandleTime() + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
+                            log.info("做多按时," + candleNew.getCandleTime() + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
                         }
                     } else {
                         for (BchCandles5m candles5m : tempList) {
                             if (candles5m.getHigh() >= planLossPrice) {
                                 double loss = buyPrice - planLossPrice;
                                 sum.add(loss / buyPrice * 1000);
-                                //log.info("做空止损," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - planLossPrice) + "," + (buyPrice - planLossPrice) / buyPrice * 1000);
+                                log.info("做空止损," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - planLossPrice) + "," + (buyPrice - planLossPrice) / buyPrice * 1000);
                                 lossTimes++;
                                 stopTimes++;
                                 sellflag = false;
@@ -363,7 +363,7 @@ public class BchFindBestParamsTest {
                             }
                             if ((buyPrice - candles5m.getLow()) >= gainAVG * lossAVG) {
                                 sum.add((buyPrice - candles5m.getLow()) / buyPrice * 1000);
-                                //log.info("做空止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - candles5m.getLow()) + "," + (buyPrice - candles5m.getLow()) / buyPrice * 1000);
+                                log.info("做空止盈," + candleNew.getCandleTime() + "," + buyPrice + "," + planLossPrice + "," + (buyPrice - candles5m.getLow()) + "," + (buyPrice - candles5m.getLow()) / buyPrice * 1000);
                                 gainTimes++;
                                 sellflag = false;
                                 break;
@@ -379,7 +379,7 @@ public class BchFindBestParamsTest {
                                 stopTimes++;
                             }
                             sum.add(loss / buyPrice * 1000);
-                            //log.info("做空按时," + candleNew.getCandleTime() + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
+                            log.info("做空按时," + candleNew.getCandleTime() + "," + buyPrice + "," + lastClose + "," + loss + "," + loss / buyPrice * 1000);
                         }
                     }
                     //end

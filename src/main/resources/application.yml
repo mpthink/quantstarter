@@ -31,6 +31,10 @@ spring:
         enabled: true
         url-pattern: /druid/*
         reset-enable: false
+  task:
+    scheduling:
+      pool:
+        size: 50
 
 okexconfig:
   wssUrl: wss://real.okex.com:8443/ws/v3
