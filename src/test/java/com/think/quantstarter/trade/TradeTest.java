@@ -51,7 +51,7 @@ public class TradeTest {
     @Test
     public void test(){
         //下单
-        PerOrderResult order1 = ethTradeService.order(FuturesTransactionTypeEnum.OPEN_LONG);
+        PerOrderResult order1 = ethTradeService.order(FuturesTransactionTypeEnum.OPEN_SHORT);
         String order_id = order1.getOrder_id();
         System.out.println("order_id: " + order_id);
         System.out.println("order1: " + order1);
@@ -60,7 +60,7 @@ public class TradeTest {
         System.out.println("order price: " + Double.valueOf(orderInfo.getPrice_avg()));
         System.out.println("orderInfo: " + orderInfo);
         //计划委托
-        SwapOrderResultVO order = ethTradeService.swapOrderAlgo(FuturesTransactionTypeEnum.CLOSE_SHORT,"377.5","376.5");
+        SwapOrderResultVO order = ethTradeService.swapOrderAlgo(FuturesTransactionTypeEnum.CLOSE_SHORT,"412","416");
         System.out.println("plan order: " + order);
         String algo_id = order.getData().getAlgo_id();
 
@@ -75,14 +75,29 @@ public class TradeTest {
         //检查
         SwapOrders beforeCancel = ethTradeService.checkAlgoOrder(algo_id);
         System.out.println("check before: " + beforeCancel);
+        //取消
         CancelAlgoOrder cancelOrderAlgo = ethTradeService.cancelOrderAlgo(Arrays.asList(algo_id));
         System.out.println("cancel: " + cancelOrderAlgo);
+        //取消后检查
         SwapOrders afterCancel = ethTradeService.checkAlgoOrder(algo_id);
         System.out.println("check after: " + afterCancel);
 
         //获取委托单信息--测试
         OrderInfo orderInfo4 = ethTradeService.getOrderInfo(order_id);
         System.out.println("orderInfo4: " + orderInfo4);
+
+        //计划委托2
+        SwapOrderResultVO order2 = ethTradeService.swapOrderAlgo(FuturesTransactionTypeEnum.CLOSE_SHORT,"412","416");
+        System.out.println("plan order: " + order);
+        String algo_id2 = order.getData().getAlgo_id();
+
+        //获取委托单信息--测试
+        OrderInfo orderInfo_temp = ethTradeService.getOrderInfo(algo_id2);
+        System.out.println("order price: " + orderInfo_temp);
+
+        //关单测试，是否有止盈止损单就不能下单了
+        PerOrderResult order3 = ethTradeService.order(FuturesTransactionTypeEnum.CLOSE_SHORT);
+        System.out.println("order3: "+ order3);
 
     }
 
