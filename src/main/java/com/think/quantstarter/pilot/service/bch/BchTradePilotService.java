@@ -118,9 +118,6 @@ public class BchTradePilotService {
             Map<String, BchCandles5m> resultMap = bchEmaGenerator.generateEma5m();
             BchCandles5m candles5mNew = resultMap.get("new");
             BchCandles5m candles5mOld = resultMap.get("old");
-            if(!checkCandle5mTime(candles5mNew)){
-                throw new APIException("BCH Candle 5m is not expected time!");
-            }
             //开始条件判断并下单
             if(isDifferentLabel(candles5mOld, candles5mNew)){
                 //判断是否ema5和ema10交替的时间间隔是否大于given intervalBuy，这个条件一定程度上可以消除频繁震荡带来的下单风险
