@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.think.quantstarter.pilot.service.EthTradeService;
 import com.think.quantstarter.rest.bean.swap.result.*;
 import com.think.quantstarter.rest.enums.FuturesTransactionTypeEnum;
+import com.think.quantstarter.rest.exception.APIException;
 import com.think.quantstarter.rest.service.swap.SwapMarketAPIService;
 import com.think.quantstarter.rest.service.swap.SwapUserAPIServive;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * @author mpthink
@@ -65,10 +67,6 @@ public class TradeTest {
         String algo_id = order.getData().getAlgo_id();
 
         //获取委托单信息--测试
-        OrderInfo orderInfo2 = ethTradeService.getOrderInfo(algo_id);
-        System.out.println("order price: " + orderInfo2);
-
-        //获取委托单信息--测试
         OrderInfo orderInfo3 = ethTradeService.getOrderInfo(order_id);
         System.out.println("orderInfo3: " + orderInfo3);
 
@@ -94,10 +92,21 @@ public class TradeTest {
         //获取委托单信息--测试
         OrderInfo orderInfo_temp = ethTradeService.getOrderInfo(algo_id2);
         System.out.println("order price: " + orderInfo_temp);
+        try{
+            //关单测试，是否有止盈止损单就不能下单了
+            PerOrderResult order3 = ethTradeService.order(FuturesTransactionTypeEnum.CLOSE_SHORT);
+            System.out.println("order3: "+ order3);
+        }catch (APIException e) {
+            System.out.println("不能下单了");
+        }
 
-        //关单测试，是否有止盈止损单就不能下单了
-        PerOrderResult order3 = ethTradeService.order(FuturesTransactionTypeEnum.CLOSE_SHORT);
-        System.out.println("order3: "+ order3);
+        //取消计划
+        ethTradeService.cancelOrderAlgo(Collections.singletonList(algo_id2));
+
+        //再次下单
+        PerOrderResult order4 = ethTradeService.order(FuturesTransactionTypeEnum.CLOSE_SHORT);
+        System.out.println("order4: "+ order4);
+
 
     }
 
