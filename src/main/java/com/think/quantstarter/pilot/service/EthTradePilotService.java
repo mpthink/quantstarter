@@ -101,6 +101,7 @@ public class EthTradePilotService {
                 }
                 orderRecords.removeAll(removes);
                 if(orderRecords.size() == 0){
+                    log.info("orderRecords 清零了。。");
                     break;
                 }
                 Thread.sleep(1000);
