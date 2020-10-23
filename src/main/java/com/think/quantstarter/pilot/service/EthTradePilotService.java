@@ -81,23 +81,24 @@ public class EthTradePilotService {
         if(orderRecords.size()>0){
             while (true){
                 List<OrderRecord> removes = new ArrayList<>();
-                orderRecords.forEach(orderRecord -> {
+                for (OrderRecord orderRecord : orderRecords) {//检查策略单是否生效或者被取消
+                    SwapOrders swapOrders = ethTradeService.checkAlgoOrder(orderRecord.getAlgo_id());
+                    if (swapOrders.getStatus().equals("2") || swapOrders.getStatus().equals("3")) {
+                        log.info("ETH止盈止损已经触发，或者超时取消....{}", orderRecord);
+                        removes.add(orderRecord);
+                        continue;
+                    }
                     String buyTime = orderRecord.getTimestamp();
                     long timeGap = countTimeGapMinutesWithNow(buyTime);
-                    if(timeGap >= holdTime){
+                    if (timeGap >= holdTime) {
                         //到期卖出
-                        log.info("ETH到期卖出....{}",orderRecord);
-                        ethTradeService.order(orderRecord.getOrder_type());
+                        log.info("ETH到期卖出，取消计划单，然后下单....{}", orderRecord);
                         ethTradeService.cancelOrderAlgo(Collections.singletonList(orderRecord.getAlgo_id()));
+                        ethTradeService.order(orderRecord.getOrder_type());
                         removes.add(orderRecord);
                     }
-                    //检查策略单是否生效
-                    SwapOrders swapOrders = ethTradeService.checkAlgoOrder(orderRecord.getAlgo_id());
-                    if(swapOrders.getStatus().equals("2")){
-                        log.info("ETH止盈止损已经触发....{}",orderRecord);
-                        removes.add(orderRecord);
-                    }
-                });
+
+                }
                 orderRecords.removeAll(removes);
                 if(orderRecords.size() == 0){
                     break;

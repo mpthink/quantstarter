@@ -13,7 +13,6 @@ import com.think.quantstarter.rest.service.swap.SwapTradeAPIService;
 import com.think.quantstarter.rest.service.swap.SwapUserAPIServive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Retryable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -44,7 +43,7 @@ public class BchTradeService {
     /**
      * 定时更改order size的大小
      */
-    @Scheduled(cron = "0 59 23 15 * ?")
+    //@Scheduled(cron = "0 59 23 15 * ?")
     @Retryable(include = {APIException.class}, maxAttempts = 3)
     public void changeOrderSize() {
         AccountsInfo bchAccountInfo = getBchAccountInfo();

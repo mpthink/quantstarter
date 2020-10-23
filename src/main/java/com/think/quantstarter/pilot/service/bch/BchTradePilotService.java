@@ -20,8 +20,6 @@ import com.think.quantstarter.utils.DateUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.retry.annotation.Retryable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -75,29 +73,29 @@ public class BchTradePilotService {
      * 1. 检查单据是否到期，到期卖出，并从orderRecords删除
      * 2. 检查计划单是否触发，如果触发，从orderRecords删除
      */
-    @Scheduled(cron = "0/5 * * * * ?")
+    //@Scheduled(cron = "0/5 * * * * ?")
     @SneakyThrows
     public void checkAndCleanOrders(){
         if(orderRecords.size()>0){
             while (true){
                 List<OrderRecord> removes = new ArrayList<>();
-                orderRecords.forEach(orderRecord -> {
+                for (OrderRecord orderRecord : orderRecords) {//检查策略单是否生效
+                    SwapOrders swapOrders = bchTradeService.checkAlgoOrder(orderRecord.getAlgo_id());
+                    if (swapOrders.getStatus().equals("2") || swapOrders.getStatus().equals("3")) {
+                        log.info("BCH止盈止损已经触发，或者超时取消....{}", orderRecord);
+                        removes.add(orderRecord);
+                        continue;
+                    }
                     String buyTime = orderRecord.getTimestamp();
                     long timeGap = countTimeGapMinutesWithNow(buyTime);
-                    if(timeGap >= holdTime){
+                    if (timeGap >= holdTime) {
                         //到期卖出
-                        log.info("BCH到期卖出....{}",orderRecord);
+                        log.info("BCH到期卖出....{}", orderRecord);
                         bchTradeService.order(orderRecord.getOrder_type());
                         bchTradeService.cancelOrderAlgo(Collections.singletonList(orderRecord.getAlgo_id()));
                         removes.add(orderRecord);
                     }
-                    //检查策略单是否生效
-                    SwapOrders swapOrders = bchTradeService.checkAlgoOrder(orderRecord.getAlgo_id());
-                    if(swapOrders.getStatus().equals("2")){
-                        log.info("BCH止盈止损已经触发....{}",orderRecord);
-                        removes.add(orderRecord);
-                    }
-                });
+                }
                 orderRecords.removeAll(removes);
                 if(orderRecords.size() == 0){
                     break;
@@ -110,8 +108,8 @@ public class BchTradePilotService {
     /**
      * 每隔5分钟去判断是否下单
      */
-    @Scheduled(cron = "1 0/5 * * * ?")
-    @Retryable(include = {APIException.class}, maxAttempts = 3)
+    //@Scheduled(cron = "1 0/5 * * * ?")
+    //@Retryable(include = {APIException.class}, maxAttempts = 3)
     public void openOrder(){
         try{
             //获取最新的candle数据
@@ -180,7 +178,7 @@ public class BchTradePilotService {
     /**
      * 每隔一段时间去检查orderRecords的持单数量和真实持单数量是否一致，有可能会有多单在手，但是显示一个单据
      */
-    @Scheduled(cron = "0 0 8 * * ?")
+    //@Scheduled(cron = "0 0 8 * * ?")
     public void compareOrders(){
         if(orderRecords.size()>0){
             log.info("BCH check real position and procedure!");
@@ -210,7 +208,7 @@ public class BchTradePilotService {
     /**
      * 定时清理1个月之前的历史数据，防止数据过大
      */
-    @Scheduled(cron = "0 0 23 15 * ?")
+    //@Scheduled(cron = "0 0 23 15 * ?")
     public void removeHistoryData(){
         Date now = new Date();
         String nowString = DateUtils.timeToString(now, 8);
