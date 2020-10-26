@@ -90,14 +90,15 @@ public class BchTradePilotService {
                     long timeGap = countTimeGapMinutesWithNow(buyTime);
                     if (timeGap >= holdTime) {
                         //到期卖出
-                        log.info("BCH到期卖出....{}", orderRecord);
-                        bchTradeService.order(orderRecord.getOrder_type());
+                        log.info("BCH到期卖出，取消计划单，然后下单....{}", orderRecord);
                         bchTradeService.cancelOrderAlgo(Collections.singletonList(orderRecord.getAlgo_id()));
+                        bchTradeService.order(orderRecord.getOrder_type());
                         removes.add(orderRecord);
                     }
                 }
                 orderRecords.removeAll(removes);
                 if(orderRecords.size() == 0){
+                    log.info("orderRecords 清零了。。");
                     break;
                 }
                 Thread.sleep(2000);
